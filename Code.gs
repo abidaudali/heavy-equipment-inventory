@@ -1,267 +1,112 @@
 /**
  * ============================================================================
- * GOOGLE APPS SCRIPT: Heavy Equipment Spare Parts Inventory Backend
+ * GOOGLE APPS SCRIPT: PT. STAR WAGEN INDONESIA - VIB Cloud Database Backend
  * ============================================================================
- * Petunjuk Instalasi Singkat:
- * 1. Buat Google Sheet baru di Google Drive (https://sheets.new)
- * 2. Klik menu "Extensions" (Ekstensi) > "Apps Script"
- * 3. Hapus kode bawaan, lalu paste seluruh isi file ini ke dalamnya.
- * 4. Jalankan fungsi "setupSheet" sekali untuk membuat header dan format otomatis.
- * 5. Klik "Deploy" (Terapkan) > "New deployment" (Penerapan baru).
- *    - Select type: Web app (Aplikasi Web)
- *    - Description: Heavy Equipment Inventory API
- *    - Execute as: Me (Email Anda)
- *    - Who has access: Anyone (Siapa saja)  <-- PENTING agar web dapat mengakses
- * 6. Klik "Deploy", izinkan akses akun Google Anda.
- * 7. Salin "Web App URL" yang diberikan, lalu paste di menu pengaturan Web Dashboard!
+ * Mendukung 3 Sheet Tersinkronisasi Otomatis:
+ * 1. MASTER_MATERIAL (Master Data Spare Part, QTY, Min/Max, PS/NON PS, LIB/NON LIB)
+ * 2. DAILY_STOCK (Pencatatan Transaksi Stok Harian IN / OUT / UTD / SISA)
+ * 3. AUDIT_LOGS (Riwayat Lengkap Perubahan Data & Keamanan)
  * ============================================================================
  */
 
-const SHEET_NAME = "INVENTORY";
+const SHEET_MASTER = "MASTER_MATERIAL";
+const SHEET_DAILY = "DAILY_STOCK";
+const SHEET_AUDIT = "AUDIT_LOGS";
 
-// Header kolom standar
-const HEADERS = [
+// Header Kolom Standar
+const HEADERS_MASTER = [
   "No",
-  "Prod",
-  "Model Unit",
-  "Part Number",
-  "Description",
+  "Kode Material",
+  "Lokasi",
+  "Nama Material",
+  "Price",
+  "Stok Awal",
+  "Stok Saat Ini",
   "Min",
   "Max",
-  "Status",
-  "Qty",
-  "Month",
-  "Week",
-  "Day",
-  "DOI",
+  "Status Servis (PS)",
+  "Kategori LIB",
+  "Prod",
+  "Model Unit",
   "Remarks",
-  "Alternate PN",
   "Last Updated"
+];
+
+const HEADERS_DAILY = [
+  "ID Transaksi",
+  "Tanggal",
+  "Jam",
+  "Kode Material",
+  "Nama Material",
+  "Lokasi",
+  "IN",
+  "OUT",
+  "UTD",
+  "SISA",
+  "Catatan",
+  "Updated By",
+  "Last Updated"
+];
+
+const HEADERS_AUDIT = [
+  "Log ID",
+  "Timestamp",
+  "User",
+  "Aksi",
+  "Kode Material",
+  "Detail Perubahan"
 ];
 
 /**
  * Handle GET Requests
- * Contoh: 
- * - ?action=getData
- * - ?action=ping
- * - ?action=getStats
  */
 function doGet(e) {
   const lock = LockService.getScriptLock();
-  lock.tryLock(10000);
+  lock.tryLock(15000);
 
   try {
-    const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "getData";
+    const action = (e && e.parameter && e.parameter.action) ? e.parameter.action : "getAllData";
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName(SHEET_NAME);
 
-    if (!sheet) {
-      sheet = setupSheet();
-    }
+    ensureAllSheets(ss);
 
     if (action === "ping") {
       return jsonResponse({
         status: "success",
-        message: "Google Apps Script API is active & connected!",
+        message: "Google Apps Script Inventory API is online & active!",
         spreadsheetTitle: ss.getName(),
         spreadsheetUrl: ss.getUrl()
       });
     }
 
-    if (action === "getData") {
-      const data = getSheetData(sheet);
+    if (action === "getAllData" || action === "getData") {
+      const masterData = getMasterSheetData(ss.getSheetByName(SHEET_MASTER));
+      const dailyData = getDailySheetData(ss.getSheetByName(SHEET_DAILY));
+      const auditData = getAuditSheetData(ss.getSheetByName(SHEET_AUDIT));
+
       return jsonResponse({
         status: "success",
-        count: data.length,
-        data: data
+        counts: {
+          master: masterData.length,
+          daily: dailyData.length,
+          audit: auditData.length
+        },
+        data: {
+          master: masterData,
+          daily: dailyData,
+          audit: auditData
+        }
       });
     }
 
-    return jsonResponse({ status: "error", message: "Unknown action: " + action });
-
-  } catch (err) {
-    return jsonResponse({ status: "error", message: err.toString() });
-  } finally {
-    lock.releaseLock();
-  }
-}
-
-/**
- * Handle POST Requests
- * Digunakan untuk:
- * - updateStock (menambah / mengurangi stok)
- * - addItem (menambah part baru)
- * - editItem (mengubah data part)
- * - deleteItem (menghapus part)
- * - bulkSync (mengirim seluruh data dari web ke Google Sheet)
- */
-function doPost(e) {
-  const lock = LockService.getScriptLock();
-  lock.tryLock(10000);
-
-  try {
-    if (!e || !e.postData || !e.postData.contents) {
-      return jsonResponse({ status: "error", message: "No post data received" });
+    if (action === "getMasterData") {
+      const data = getMasterSheetData(ss.getSheetByName(SHEET_MASTER));
+      return jsonResponse({ status: "success", count: data.length, data: data });
     }
 
-    const payload = JSON.parse(e.postData.contents);
-    const action = payload.action;
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName(SHEET_NAME);
-
-    if (!sheet) {
-      sheet = setupSheet();
-    }
-
-    // 1. UPDATE STOCK
-    if (action === "updateStock") {
-      const pn = payload.pnFinal;
-      const newQty = Number(payload.qty);
-      const note = payload.note || "Quick Stock Update";
-
-      const rows = sheet.getDataRange().getValues();
-      let found = false;
-
-      for (let i = 1; i < rows.length; i++) {
-        const rowPn = String(rows[i][3]).trim();
-        if (rowPn === String(pn).trim()) {
-          sheet.getRange(i + 1, 9).setValue(newQty); // Kolom Qty (kolom ke-9)
-          sheet.getRange(i + 1, 16).setValue(new Date().toLocaleString("id-ID")); // Last Updated
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        return jsonResponse({ status: "error", message: "Part number " + pn + " tidak ditemukan di Google Sheet." });
-      }
-
-      return jsonResponse({ status: "success", message: "Stok part " + pn + " berhasil diperbarui menjadi " + newQty });
-    }
-
-    // 2. ADD ITEM
-    if (action === "addItem") {
-      const item = payload.item;
-      const lastRow = sheet.getLastRow();
-      const newNo = lastRow > 1 ? Number(sheet.getRange(lastRow, 1).getValue()) + 1 : 1;
-
-      sheet.appendRow([
-        item.no || newNo,
-        item.prod || "",
-        item.modelUnit || "",
-        item.pnFinal || "",
-        item.desc || "",
-        item.min !== undefined && item.min !== null ? item.min : "",
-        item.max !== undefined && item.max !== null ? item.max : "",
-        item.status || "PS",
-        item.qty !== undefined && item.qty !== null ? Number(item.qty) : 0,
-        item.month !== undefined ? item.month : "",
-        item.week !== undefined ? item.week : "",
-        item.day !== undefined ? item.day : "",
-        item.doi !== undefined ? item.doi : "",
-        item.remarks || "",
-        item.alternatePn || "",
-        new Date().toLocaleString("id-ID")
-      ]);
-
-      return jsonResponse({ status: "success", message: "Part baru berhasil ditambahkan!", item: item });
-    }
-
-    // 3. EDIT ITEM
-    if (action === "editItem") {
-      const item = payload.item;
-      const pn = item.pnFinal;
-      const rows = sheet.getDataRange().getValues();
-      let foundIndex = -1;
-
-      for (let i = 1; i < rows.length; i++) {
-        if (String(rows[i][3]).trim() === String(pn).trim() || (item.originalPn && String(rows[i][3]).trim() === String(item.originalPn).trim())) {
-          foundIndex = i + 1;
-          break;
-        }
-      }
-
-      if (foundIndex === -1) {
-        return jsonResponse({ status: "error", message: "Part tidak ditemukan untuk diedit." });
-      }
-
-      sheet.getRange(foundIndex, 2).setValue(item.prod || "");
-      sheet.getRange(foundIndex, 3).setValue(item.modelUnit || "");
-      sheet.getRange(foundIndex, 4).setValue(item.pnFinal || "");
-      sheet.getRange(foundIndex, 5).setValue(item.desc || "");
-      sheet.getRange(foundIndex, 6).setValue(item.min !== null ? item.min : "");
-      sheet.getRange(foundIndex, 7).setValue(item.max !== null ? item.max : "");
-      sheet.getRange(foundIndex, 8).setValue(item.status || "PS");
-      sheet.getRange(foundIndex, 9).setValue(item.qty !== null ? Number(item.qty) : 0);
-      sheet.getRange(foundIndex, 10).setValue(item.month !== null ? item.month : "");
-      sheet.getRange(foundIndex, 11).setValue(item.week !== null ? item.week : "");
-      sheet.getRange(foundIndex, 12).setValue(item.day !== null ? item.day : "");
-      sheet.getRange(foundIndex, 13).setValue(item.doi !== null ? item.doi : "");
-      sheet.getRange(foundIndex, 14).setValue(item.remarks || "");
-      sheet.getRange(foundIndex, 15).setValue(item.alternatePn || "");
-      sheet.getRange(foundIndex, 16).setValue(new Date().toLocaleString("id-ID"));
-
-      return jsonResponse({ status: "success", message: "Data part berhasil diperbarui!" });
-    }
-
-    // 4. DELETE ITEM
-    if (action === "deleteItem") {
-      const pn = payload.pnFinal;
-      const rows = sheet.getDataRange().getValues();
-      let foundIndex = -1;
-
-      for (let i = 1; i < rows.length; i++) {
-        if (String(rows[i][3]).trim() === String(pn).trim()) {
-          foundIndex = i + 1;
-          break;
-        }
-      }
-
-      if (foundIndex === -1) {
-        return jsonResponse({ status: "error", message: "Part tidak ditemukan untuk dihapus." });
-      }
-
-      sheet.deleteRow(foundIndex);
-      return jsonResponse({ status: "success", message: "Part " + pn + " berhasil dihapus dari Google Sheet." });
-    }
-
-    // 5. BULK SYNC (Import seluruh data dari website ke Google Sheet)
-    if (action === "bulkSync" && Array.isArray(payload.items)) {
-      sheet.clearContents();
-      sheet.appendRow(HEADERS);
-
-      const items = payload.items;
-      const rowsToInsert = [];
-      const nowStr = new Date().toLocaleString("id-ID");
-
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        rowsToInsert.push([
-          it.no || (i + 1),
-          it.prod || "",
-          it.modelUnit || "",
-          it.pnFinal || "",
-          it.desc || "",
-          it.min !== undefined && it.min !== null ? it.min : "",
-          it.max !== undefined && it.max !== null ? it.max : "",
-          it.status || "PS",
-          it.qty !== undefined && it.qty !== null ? Number(it.qty) : 0,
-          it.month !== undefined && it.month !== null ? it.month : "",
-          it.week !== undefined && it.week !== null ? it.week : "",
-          it.day !== undefined && it.day !== null ? it.day : "",
-          it.doi !== undefined && it.doi !== null ? it.doi : "",
-          it.remarks || "",
-          it.alternatePn || "",
-          nowStr
-        ]);
-      }
-
-      if (rowsToInsert.length > 0) {
-        sheet.getRange(2, 1, rowsToInsert.length, HEADERS.length).setValues(rowsToInsert);
-      }
-
-      formatSheetDesign(sheet);
-      return jsonResponse({ status: "success", message: "Bulk sync berhasil: " + items.length + " item disinkronkan!" });
+    if (action === "getDailyStock") {
+      const data = getDailySheetData(ss.getSheetByName(SHEET_DAILY));
+      return jsonResponse({ status: "success", count: data.length, data: data });
     }
 
     return jsonResponse({ status: "error", message: "Action tidak dikenali: " + action });
@@ -274,9 +119,258 @@ function doPost(e) {
 }
 
 /**
- * Helper: Ambil seluruh data sheet menjadi array objek JSON
+ * Handle POST Requests
  */
-function getSheetData(sheet) {
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(20000);
+
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return jsonResponse({ status: "error", message: "Tidak ada data POST yang diterima." });
+    }
+
+    const payload = JSON.parse(e.postData.contents);
+    const action = payload.action;
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    ensureAllSheets(ss);
+
+    const nowStr = new Date().toLocaleString("id-ID");
+
+    // 1. SYNC ALL (Bulk Push dari website ke Google Sheets)
+    if (action === "syncAll" || action === "bulkSync") {
+      const masterItems = payload.master || payload.items || [];
+      const dailyItems = payload.daily || [];
+      const auditItems = payload.audit || [];
+
+      // A. Sync Master Material
+      const sheetM = ss.getSheetByName(SHEET_MASTER);
+      sheetM.clearContents();
+      sheetM.appendRow(HEADERS_MASTER);
+
+      if (masterItems.length > 0) {
+        const rowsM = masterItems.map((m, idx) => [
+          m.no || (idx + 1),
+          String(m.kodeMaterial || m.pnFinal || "").trim(),
+          String(m.lokasi || "").trim(),
+          String(m.namaMaterial || m.desc || "").trim(),
+          Number(m.price) || 0,
+          Number(m.stokAwal !== undefined ? m.stokAwal : (m.qty || 0)),
+          Number(m.stokSaatIni !== undefined ? m.stokSaatIni : (m.qty || 0)),
+          m.min !== undefined && m.min !== null ? Number(m.min) : 1,
+          m.max !== undefined && m.max !== null ? Number(m.max) : 5,
+          String(m.status || "PS").trim().toUpperCase(),
+          String(m.libCategory || "NON LIB").trim().toUpperCase(),
+          m.prod || "GENERAL",
+          m.modelUnit || "",
+          m.remarks || "",
+          nowStr
+        ]);
+        sheetM.getRange(2, 1, rowsM.length, HEADERS_MASTER.length).setValues(rowsM);
+      }
+      formatHeader(sheetM, HEADERS_MASTER.length, "#1e293b");
+
+      // B. Sync Daily Stock
+      const sheetD = ss.getSheetByName(SHEET_DAILY);
+      sheetD.clearContents();
+      sheetD.appendRow(HEADERS_DAILY);
+
+      if (dailyItems.length > 0) {
+        const rowsD = dailyItems.map(d => [
+          d.id || ("TX-" + Date.now()),
+          d.tanggal || "",
+          d.jam || "",
+          String(d.kodeMaterial || "").trim(),
+          String(d.namaMaterial || "").trim(),
+          String(d.lokasi || "").trim(),
+          Number(d.inQty) || 0,
+          Number(d.outQty) || 0,
+          String(d.utd || ""),
+          Number(d.sisa) || 0,
+          String(d.notes || ""),
+          d.updatedBy || "Team",
+          nowStr
+        ]);
+        sheetD.getRange(2, 1, rowsD.length, HEADERS_DAILY.length).setValues(rowsD);
+      }
+      formatHeader(sheetD, HEADERS_DAILY.length, "#065f46");
+
+      // C. Sync Audit Logs
+      const sheetA = ss.getSheetByName(SHEET_AUDIT);
+      sheetA.clearContents();
+      sheetA.appendRow(HEADERS_AUDIT);
+
+      if (auditItems.length > 0) {
+        const rowsA = auditItems.slice(0, 500).map(a => [
+          a.id || ("LOG-" + Date.now()),
+          a.timestamp || nowStr,
+          a.user || "Team",
+          a.action || "UPDATE",
+          a.kodeMaterial || "",
+          a.details || ""
+        ]);
+        sheetA.getRange(2, 1, rowsA.length, HEADERS_AUDIT.length).setValues(rowsA);
+      }
+      formatHeader(sheetA, HEADERS_AUDIT.length, "#4c1d95");
+
+      return jsonResponse({
+        status: "success",
+        message: `Sinkronisasi berhasil! ${masterItems.length} Master Material (PS & LIB), ${dailyItems.length} Transaksi Harian, dan ${auditItems.length} Audit Logs tersimpan.`
+      });
+    }
+
+    // 2. UPSERT MASTER MATERIAL
+    if (action === "upsertMaster") {
+      const item = payload.item;
+      const sheetM = ss.getSheetByName(SHEET_MASTER);
+      const rows = sheetM.getDataRange().getValues();
+      const kodeTarget = String(item.kodeMaterial || item.pnFinal || "").trim();
+      let foundIndex = -1;
+
+      for (let i = 1; i < rows.length; i++) {
+        if (String(rows[i][1]).trim() === kodeTarget) {
+          foundIndex = i + 1;
+          break;
+        }
+      }
+
+      const rowData = [
+        item.no || (foundIndex > 0 ? rows[foundIndex - 1][0] : sheetM.getLastRow()),
+        kodeTarget,
+        item.lokasi || "",
+        item.namaMaterial || item.desc || "",
+        Number(item.price) || 0,
+        Number(item.stokAwal) || 0,
+        Number(item.stokSaatIni !== undefined ? item.stokSaatIni : (item.qty || 0)),
+        item.min !== undefined ? Number(item.min) : 1,
+        item.max !== undefined ? Number(item.max) : 5,
+        String(item.status || "PS").trim().toUpperCase(),
+        String(item.libCategory || "NON LIB").trim().toUpperCase(),
+        item.prod || "GENERAL",
+        item.modelUnit || "",
+        item.remarks || "",
+        nowStr
+      ];
+
+      if (foundIndex > 0) {
+        sheetM.getRange(foundIndex, 1, 1, HEADERS_MASTER.length).setValues([rowData]);
+        return jsonResponse({ status: "success", message: `Material ${kodeTarget} berhasil diperbarui.` });
+      } else {
+        sheetM.appendRow(rowData);
+        return jsonResponse({ status: "success", message: `Material baru ${kodeTarget} berhasil ditambahkan.` });
+      }
+    }
+
+    // 3. UPSERT DAILY STOCK TRANSACTION
+    if (action === "upsertDailyStock") {
+      const tx = payload.tx;
+      const sheetD = ss.getSheetByName(SHEET_DAILY);
+      const rows = sheetD.getDataRange().getValues();
+      let foundIndex = -1;
+
+      for (let i = 1; i < rows.length; i++) {
+        if (tx.id && String(rows[i][0]).trim() === String(tx.id).trim()) {
+          foundIndex = i + 1;
+          break;
+        }
+        if (String(rows[i][3]).trim() === String(tx.kodeMaterial).trim() && String(rows[i][1]).trim() === String(tx.tanggal).trim()) {
+          foundIndex = i + 1;
+          break;
+        }
+      }
+
+      const rowData = [
+        tx.id || ("TX-" + Date.now()),
+        tx.tanggal || "",
+        tx.jam || "",
+        String(tx.kodeMaterial || "").trim(),
+        String(tx.namaMaterial || "").trim(),
+        String(tx.lokasi || "").trim(),
+        Number(tx.inQty) || 0,
+        Number(tx.outQty) || 0,
+        String(tx.utd || ""),
+        Number(tx.sisa) || 0,
+        String(tx.notes || ""),
+        tx.updatedBy || "Team",
+        nowStr
+      ];
+
+      if (foundIndex > 0) {
+        sheetD.getRange(foundIndex, 1, 1, HEADERS_DAILY.length).setValues([rowData]);
+        return jsonResponse({ status: "success", message: `Transaksi ${tx.kodeMaterial} tanggal ${tx.tanggal} berhasil diperbarui.` });
+      } else {
+        sheetD.appendRow(rowData);
+        return jsonResponse({ status: "success", message: `Transaksi baru ${tx.kodeMaterial} tanggal ${tx.tanggal} berhasil dicatat.` });
+      }
+    }
+
+    // 4. LOG AUDIT
+    if (action === "logAudit") {
+      const log = payload.log;
+      const sheetA = ss.getSheetByName(SHEET_AUDIT);
+      sheetA.appendRow([
+        log.id || ("LOG-" + Date.now()),
+        log.timestamp || nowStr,
+        log.user || "Team",
+        log.action || "INFO",
+        log.kodeMaterial || "",
+        log.details || ""
+      ]);
+      return jsonResponse({ status: "success" });
+    }
+
+    return jsonResponse({ status: "error", message: "Action POST tidak dikenali: " + action });
+
+  } catch (err) {
+    return jsonResponse({ status: "error", message: err.toString() });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Pastikan 3 Sheet Tersedia & Terformat
+ */
+function ensureAllSheets(ss) {
+  let sheetM = ss.getSheetByName(SHEET_MASTER);
+  if (!sheetM) {
+    sheetM = ss.insertSheet(SHEET_MASTER);
+    sheetM.appendRow(HEADERS_MASTER);
+    formatHeader(sheetM, HEADERS_MASTER.length, "#1e293b");
+  }
+
+  let sheetD = ss.getSheetByName(SHEET_DAILY);
+  if (!sheetD) {
+    sheetD = ss.insertSheet(SHEET_DAILY);
+    sheetD.appendRow(HEADERS_DAILY);
+    formatHeader(sheetD, HEADERS_DAILY.length, "#065f46");
+  }
+
+  let sheetA = ss.getSheetByName(SHEET_AUDIT);
+  if (!sheetA) {
+    sheetA = ss.insertSheet(SHEET_AUDIT);
+    sheetA.appendRow(HEADERS_AUDIT);
+    formatHeader(sheetA, HEADERS_AUDIT.length, "#4c1d95");
+  }
+}
+
+/**
+ * Format Header Row
+ */
+function formatHeader(sheet, numCols, bgColor) {
+  const range = sheet.getRange(1, 1, 1, numCols);
+  range.setBackground(bgColor);
+  range.setFontColor("#ffffff");
+  range.setFontWeight("bold");
+  range.setHorizontalAlignment("center");
+  sheet.setRowHeight(1, 35);
+  sheet.setFrozenRows(1);
+}
+
+/**
+ * Helper: Ambil data Sheet Master
+ */
+function getMasterSheetData(sheet) {
   const range = sheet.getDataRange();
   const values = range.getValues();
   if (values.length <= 1) return [];
@@ -284,72 +378,91 @@ function getSheetData(sheet) {
   const items = [];
   for (let i = 1; i < values.length; i++) {
     const row = values[i];
-    if (!row[3] && !row[4]) continue; // Lewati baris kosong
+    if (!row[1] && !row[3]) continue;
 
     items.push({
       no: row[0] ? Number(row[0]) : i,
-      prod: String(row[1] || "").trim(),
-      modelUnit: String(row[2] || "").trim(),
-      pnFinal: String(row[3] || "").trim(),
-      desc: String(row[4] || "").trim(),
-      min: row[5] !== "" && row[5] !== null ? Number(row[5]) : null,
-      max: row[6] !== "" && row[6] !== null ? Number(row[6]) : null,
-      status: String(row[7] || "PS").trim(),
-      qty: row[8] !== "" && row[8] !== null ? Number(row[8]) : 0,
-      month: row[9] !== "" && row[9] !== null ? Number(row[9]) : null,
-      week: row[10] !== "" && row[10] !== null ? Number(row[10]) : null,
-      day: row[11] !== "" && row[11] !== null ? Number(row[11]) : null,
-      doi: row[12] !== "" && row[12] !== null ? Number(row[12]) : null,
+      kodeMaterial: String(row[1] || "").trim(),
+      lokasi: String(row[2] || "").trim(),
+      namaMaterial: String(row[3] || "").trim(),
+      price: Number(row[4]) || 0,
+      stokAwal: Number(row[5]) || 0,
+      stokSaatIni: Number(row[6]) || 0,
+      min: row[7] !== "" ? Number(row[7]) : 1,
+      max: row[8] !== "" ? Number(row[8]) : 5,
+      status: String(row[9] || "PS").trim().toUpperCase(),
+      libCategory: String(row[10] || "NON LIB").trim().toUpperCase(),
+      prod: String(row[11] || "GENERAL").trim(),
+      modelUnit: String(row[12] || "").trim(),
       remarks: String(row[13] || "").trim(),
-      alternatePn: String(row[14] || "").trim(),
-      lastUpdated: row[15] || ""
+      lastUpdated: row[14] || ""
     });
   }
-
   return items;
 }
 
 /**
- * Format & Buat Sheet Baru jika belum ada
+ * Helper: Ambil data Sheet Daily Stock
  */
-function setupSheet() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(SHEET_NAME);
+function getDailySheetData(sheet) {
+  const range = sheet.getDataRange();
+  const values = range.getValues();
+  if (values.length <= 1) return [];
 
-  if (!sheet) {
-    sheet = ss.insertSheet(SHEET_NAME);
+  const items = [];
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    if (!row[3]) continue;
+
+    let tglStr = String(row[1] || "").trim();
+    if (row[1] instanceof Date) {
+      tglStr = Utilities.formatDate(row[1], "GMT+7", "yyyy-MM-dd");
+    }
+
+    items.push({
+      id: String(row[0] || ("TX-" + i)).trim(),
+      tanggal: tglStr,
+      jam: String(row[2] || "").trim(),
+      kodeMaterial: String(row[3] || "").trim(),
+      namaMaterial: String(row[4] || "").trim(),
+      lokasi: String(row[5] || "").trim(),
+      inQty: Number(row[6]) || 0,
+      outQty: Number(row[7]) || 0,
+      utd: String(row[8] || "").trim(),
+      sisa: Number(row[9]) || 0,
+      notes: String(row[10] || "").trim(),
+      updatedBy: String(row[11] || "").trim(),
+      lastUpdated: row[12] || ""
+    });
   }
-
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
-  }
-
-  formatSheetDesign(sheet);
-  return sheet;
+  return items;
 }
 
 /**
- * Styling tampilan Spreadsheet agar elegan dan mudah dibaca
+ * Helper: Ambil data Sheet Audit
  */
-function formatSheetDesign(sheet) {
-  // Header Style
-  const headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
-  headerRange.setBackground("#1e293b");
-  headerRange.setFontColor("#f8fafc");
-  headerRange.setFontWeight("bold");
-  headerRange.setHorizontalAlignment("center");
-  headerRange.setVerticalAlignment("middle");
-  sheet.setRowHeight(1, 35);
-  sheet.setFrozenRows(1);
+function getAuditSheetData(sheet) {
+  const range = sheet.getDataRange();
+  const values = range.getValues();
+  if (values.length <= 1) return [];
 
-  // Auto resize column widths
-  for (let c = 1; c <= HEADERS.length; c++) {
-    sheet.autoResizeColumn(c);
+  const items = [];
+  for (let i = 1; i < values.length; i++) {
+    const row = values[i];
+    items.push({
+      id: String(row[0] || "").trim(),
+      timestamp: String(row[1] || "").trim(),
+      user: String(row[2] || "").trim(),
+      action: String(row[3] || "").trim(),
+      kodeMaterial: String(row[4] || "").trim(),
+      details: String(row[5] || "").trim()
+    });
   }
+  return items;
 }
 
 /**
- * Response Helper dengan header CORS JSON
+ * Helper: Output JSON Response
  */
 function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))

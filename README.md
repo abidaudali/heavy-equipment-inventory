@@ -1,112 +1,122 @@
-# Sistem Manajemen Inventaris Spare Part Alat Berat (Heavy Equipment Inventory)
+# Sistem Manajemen Inventaris Spare Part Alat Berat (PT. STAR WAGEN INDONESIA - VIB)
 
-Aplikasi web dashboard modern untuk manajemen stok, monitoring kesehatan inventaris, dan sinkronisasi real-time dua arah (*two-way continuous editing*) dengan **Google Sheets** menggunakan **Google Apps Script**.
-
----
-
-## 🚀 Fitur Utama
-
-1. **Dashboard KPI & Indikator Kesehatan Stok**:
-   - Total item terdaftar (338 spare part dari data Excel).
-   - Total fisik unit spare part yang tersedia.
-   - Peringatan stok **Understock** (jumlah stok di bawah batas minimum).
-   - Peringatan stok **Habis (Out of Stock / OOD)** yang butuh order mendesak.
-   - Peringatan stok **Overstock** (melebihi kapasitas batas maksimum).
-   - Ringkasan produsen alat berat (*Mercedes-Benz / MBZ, Atlas Copco / ACI, Sakai, SIP*).
-
-2. **Analitik Visual Interaktif (Chart.js)**:
-   - **Distribusi Status Stok** (Doughnut Chart): Memantau persentase stok aman vs kritis.
-   - **Komposisi Part per Produsen** (Bar Chart): Jumlah suku cadang berdasarkan brand alat berat.
-   - **Tipe Servis Part** (Doughnut Chart): Perbandingan suku cadang *Periodic Service (PS)* vs *Non-PS*.
-   - **10 Part Paling Kritis** (Horizontal Bar Chart): Membandingkan stok fisik saat ini dengan batas minimum (*safety stock*).
-
-3. **Pencarian & Filter Canggih**:
-   - Pencarian cerdas instan berdasarkan *Part Number (Final PN)*, *Alternate Part Number*, *Deskripsi*, dan *Model Unit*.
-   - Filter cepat (Tab Pills): *Semua, Kritis / Butuh Order, Habis, Understock, Optimal, Overstock, Periodic Service*.
-   - Filter dropdown: Produsen (*MBZ, ACI, SAKAI, SIP*), Model Unit (*Axor 2528 E4, Arocs 4042K, Arocs 4845 E5, QAS170, TL B7+, SV526, dll.*), Status Stok, dan Tipe Servis.
-   - Pengurutan dinamis (*Column Sorting*) pada tabel.
-   - Pengaturan jumlah baris per halaman (10, 25, 50, 100, atau Semua).
-
-4. **Operasi Data & CRUD Lengkap**:
-   - **Quick Adjust**: Tambah (+1) atau kurangi (-1) stok langsung dari baris tabel dengan satu klik.
-   - **Tambah Part Baru**: Form modal lengkap dengan validasi.
-   - **Edit Detail Part**: Ubah nomor part, nomor alternatif, batas min/max, DOI (*Days of Inventory*), dan catatan (*remarks*).
-   - **Hapus Part**: Disertai konfirmasi keamanan.
-
-5. **Continuous Editing dengan Google Sheets**:
-   - **Edit di Spreadsheet**: Anda atau tim dapat mengedit Google Sheet kapan saja (misal menambah baris baru, mengubah stok di kolom Qty), lalu klik **Sync Now** di web (atau biarkan fitur **Auto-Sync** berjalan di latar belakang setiap 1-5 menit).
-   - **Edit di Web**: Setiap perubahan stok atau penambahan part di web langsung tersimpan ke Google Sheet secara otomatis!
-   - **Bulk Push 1-Klik**: Kirim seluruh 338 data awal ke Google Sheet baru Anda hanya dengan satu kali klik.
-   - **Live Embed Preview**: Lihat langsung spreadsheet di dalam modal dashboard.
-
-6. **Tampilan & Ekspor Data**:
-   - Desain responsif (*mobile & desktop*) dengan gaya visual modern (*glassmorphism*, dark & light theme toggle).
-   - Ekspor data hasil filter ke format **CSV** (kompatibel Excel) dan **JSON**.
-   - Fitur cetak laporan (*Print / Save to PDF*).
+Aplikasi web dashboard modern untuk manajemen stok inventaris alat berat dengan **Master Data Material**, **Daily Stock Updates (IN/OUT/UTD/SISA)**, **Bulk Data Import dari Excel (Copy-Paste)**, **Buku Besar Transaksi & Audit Log**, serta sinkronisasi multi-user real-time dua arah (*two-way continuous sync*) dengan **Google Sheets** menggunakan **Google Apps Script**.
 
 ---
 
-## 🛠️ Teknologi yang Digunakan
+## 🚀 Fitur Utama & Modul Navigasi
 
-- **HTML5**: Struktur semantik modern.
-- **CSS3**: Desain kustom responsif, variabel tema, *glassmorphism*, dark/light mode.
-- **JavaScript (ES6+)**: Logika inventaris, manajemen *state*, integrasi REST API Google Apps Script, penyimpanan lokal (*LocalStorage*).
-- **Chart.js 4.4**: Visualisasi data grafik interaktif dan responsif.
-- **Google Sheets & Google Apps Script (`Code.gs`)**: Database *cloud-based* yang mendukung pengeditan tanpa henti (*continuous editing*).
-- **Font Awesome 6**: Ikon antarmuka profesional.
+Sistem website kini memiliki 6 modul utama dengan navigasi tab modern yang responsif:
+
+### 1. 📊 Dashboard KPI & Analitik Interaktif
+- **KPI Real-Time**:
+  - Total Master Material terdaftar (Kode Material unik).
+  - Total unit fisik stok yang tersedia.
+  - Peringatan stok **Understock** (di bawah batas minimum).
+  - Peringatan stok **Habis (Out of Stock / OOD)** yang butuh order mendesak.
+  - Peringatan stok **Overstock** (melebihi kapasitas batas maksimum).
+  - **Total Nilai Inventaris (IDR)**: Valuasi fisik stok dalam Rupiah (*Price x Stok Saat Ini*).
+- **Grafik Interaktif (Chart.js 4.4)** yang mengambil data aktual dari database:
+  - *Distribusi Status Stok* (Doughnut Chart): Persentase stok optimal vs understock vs habis.
+  - *Komposisi per Produsen / Lokasi* (Bar Chart).
+  - *Tipe Servis Part* (Doughnut Chart): Periodic Service (PS) vs Non-PS.
+  - *10 Part Paling Kritis* (Horizontal Bar Chart): Perbandingan stok aktual dengan safety stock.
+
+### 2. 📦 Master Data Material
+- Setiap material memiliki identitas tunggal berdasarkan **KODE MATERIAL** yang bersifat **UNIQUE**.
+- Jika Anda memasukkan kode material yang sudah ada, sistem tidak membuat data baru, melainkan menghubungkannya dengan data yang sudah ada (UPSERT).
+- Kolom Master Data:
+  - **Nomor**
+  - **Kode Material** (Primary Key / Unique Badge)
+  - **Lokasi** (contoh: *PALET E1, RAK A-3*)
+  - **Nama Material / Deskripsi**
+  - **Price** (Harga Satuan dalam Rupiah)
+  - **Stok Awal**
+  - **Stok Saat Ini** (Dihitung dinamis dan konsisten dari riwayat transaksi harian)
+  - **Status Kesehatan Stok**
+- Fitur pencarian instan, filter lokasi, filter produsen, filter status stok, dan ekspor ke CSV & JSON.
+
+### 3. 📅 Daily Stock Update
+- Pencatatan mutasi stok harian tanpa perulangan data material.
+- Kolom pencatatan harian:
+  - **Tanggal**
+  - **Jam**
+  - **Kode Material**
+  - **Nama Material**
+  - **Lokasi**
+  - **IN** (Barang Masuk)
+  - **OUT** (Barang Keluar)
+  - **UTD** (Kolom format Excel kantor)
+  - **SISA** (Saldo Stok Terhitung)
+- **Aturan Perhitungan Saldo (Cascade Recalculation)**:
+  - Transaksi hari pertama: $\text{SISA}_1 = \text{Stok Awal} + \text{IN}_1 - \text{OUT}_1$
+  - Transaksi hari berikutnya: $\text{SISA}_k = \text{SISA}_{k-1} + \text{IN}_k - \text{OUT}_k$
+  - Stok akhir hari sebelumnya secara otomatis menjadi dasar saldo awal hari berikutnya.
+  - Jika Anda mengedit quantity IN atau OUT pada tanggal manapun di masa lalu, sistem langsung menghitung ulang saldo hari tersebut dan seluruh hari setelahnya secara otomatis tanpa menghitung stok dua kali!
+- Filter pencarian berdasarkan: Jam, Tanggal, Bulan, Tahun, Lokasi, dan Kata Kunci.
+
+### 4. 📋 Bulk Data Import dari Excel (Fitur Paling Utama)
+- Buka file Excel kantor, blok dan salin (**Ctrl+C**) baris-baris data dari tim kantor, lalu tempel (**Ctrl+V**) ke halaman **Bulk Data Import**.
+- **Contoh format yang didukung:**
+  ```
+  KODE MATERIAL | LOKASI   | NAMA MATERIAL | PRICE  | IN | OUT | UTD
+  0092S37070    | PALET E1 | BOSCH N170    | 100000 | 5  | 2   | -
+  0092S47011    | PALET E1 | BOSCH N70-M   | 150000 | 3  | 1   | -
+  0092T47014    | PALET E1 | BOSCH N100-M  | 200000 | 0  | 2   | -
+  ```
+- **Kemampuan Otomatis Sistem**:
+  1. Mengenali delimiter otomatis (Tab TSV dari Excel, Pipe `|`, CSV koma/titik-koma).
+  2. Mengenali kolom berdasarkan header secara cerdas.
+  3. Memeriksa apakah material sudah terdaftar di Master Data.
+  4. Jika sudah ada, transaksi stok hari itu dicatat/diperbarui tanpa membuat duplikat material.
+  5. Jika belum ada, sistem otomatis mendaftarkan material baru tersebut ke Master Data.
+  6. Menampilkan tabel **Live Preview** lengkap dengan badge status (`BARU`, `TERDAFTAR`, `DUPLIKAT`, `GAGAL`).
+  7. Metrik ringkasan sebelum disimpan: Total Baris, Material Baru, Material Lama, Baris Valid, Baris Gagal.
+  8. Tombol **Batal** untuk membatalkan proses sebelum data disimpan ke database.
+  9. Pembuatan **Snapshot Backup Otomatis** sebelum proses import berjalan.
+
+### 5. 🕒 Stock History & Audit Log
+- **Buku Besar Transaksi (Ledger)**: Menampilkan kronologi seluruh pergerakan barang per jam, tanggal, bulan, tahun, dan lokasi.
+- **Audit Log Keamanan**: Mencatat siapa yang mengubah data (Admin/User), jam berapa, jenis aksi (*CREATE_MATERIAL, UPDATE_MATERIAL, ADD_DAILY_STOCK, EDIT_DAILY_STOCK, DELETE_DAILY_STOCK, BULK_IMPORT*), serta detail perubahannya.
+
+### 6. 📈 Reports & Valuasi Stok
+- **Posisi Stok pada Tanggal Tertentu (*Stock as of Date*)**:
+  - Anda dapat memilih tanggal di masa lalu, dan sistem akan menghitung posisi saldo stok aktual setiap spare part pada tanggal tersebut.
+- **Valuasi Nilai Stok per Lokasi**:
+  - Rekapitulasi jumlah part, total fisik unit, dan total nilai aset (Rupiah) berdasarkan masing-masing palet/rak/gudang.
+- **Cetak Laporan**:
+  - Ekspor ke **CSV** atau gunakan tombol **Cetak / Simpan PDF** (dengan format stylesheet khusus cetak).
 
 ---
 
-## 📂 Struktur File
+## 🔒 Keamanan Data & Database
 
-```
-d:\abdul muiz\
-├── index.html       # Halaman utama dashboard inventaris
-├── styles.css       # File stylesheet styling dashboard (Dark & Light theme)
-├── app.js           # Logika aplikasi, Chart.js, filter, pagination & Google Sheets sync
-├── data.js          # Dataset 338 spare part dari file Excel
-├── Code.gs          # Skrip Google Apps Script untuk backend Google Sheets
-└── README.md        # Dokumentasi dan panduan penggunaan
-```
-
----
-
-## 📖 Panduan Menjalankan Website
-
-1. Anda cukup membuka file **`index.html`** langsung dengan mengklik dua kali di File Explorer, atau klik kanan lalu pilih **Open with Google Chrome / Edge**.
-2. Website langsung siap digunakan seketika dengan seluruh **338 data spare part** yang sudah terisi (*offline-ready*).
-3. Anda dapat langsung mencoba pencarian, filter, grafik interaktif, dan tombol ubah stok (+ / -).
+1. **Client Storage**: **IndexedDB (`HeavyEquipmentInventoryDB`)**
+   - Mendukung penyimpanan ribuan data transaksi tanpa batasan kuota 5MB localStorage.
+   - Primary key dengan **UNIQUE constraint** pada `kodeMaterial`.
+   - Transaksional dan offline-ready.
+2. **Cloud Database Multi-User**: **Google Sheets via `Code.gs`**
+   - Terdiri dari 3 sheet yang tersinkronisasi:
+     - `MASTER_MATERIAL`
+     - `DAILY_STOCK`
+     - `AUDIT_LOGS`
+   - Tim kantor dapat berbagi data secara langsung tanpa perlu sewa server berbayar.
+3. **Pusat Backup & Pemulihan (Disaster Recovery)**:
+   - Unduh salinan database utuh kapan saja dalam format `.json`.
+   - Fitur restore database instan dari file cadangan.
 
 ---
 
-## 🔗 Panduan Menghubungkan Google Sheets (Hanya 3 Menit)
+## 🛠️ Panduan Menghubungkan Google Sheets Cloud
 
-Agar spreadsheet Google Sheets Anda dapat terus-menerus diedit bersama tim dan tersinkronisasi ke web, ikuti langkah berikut:
+1. Buka spreadsheet baru di [Google Sheets](https://sheets.new).
+2. Klik menu **Ekstensi (Extensions)** &rarr; **Apps Script**.
+3. Hapus kode bawaan, lalu salin seluruh isi file **`Code.gs`** yang ada di folder proyek ini ke dalamnya.
+4. Klik **Deploy (Terapkan)** &rarr; **New deployment (Penerapan baru)** &rarr; Pilih jenis **Web app**.
+5. Atur konfigurasi:
+   - **Execute as**: *Me (Email Anda)*
+   - **Who has access**: *Anyone (Siapa saja)*
+6. Klik **Deploy**, beri izin akun Google Anda, lalu salin **Web app URL** yang muncul (berakhiran `/exec`).
+7. Buka website inventaris, klik tombol **Google Sheets** di navbar atas, tempelkan URL tersebut, klik **Test Koneksi**, lalu klik **Kirim Semua Data ke Sheets**.
 
-### Langkah 1: Buat Spreadsheet Baru
-1. Buka browser dan kunjungi: [https://sheets.new](https://sheets.new)
-2. Beri nama spreadsheet Anda, misalnya: `Inventaris Spare Part Alat Berat`.
-
-### Langkah 2: Pasang Skrip Google Apps Script
-1. Di Google Sheets, klik menu **Ekstensi (Extensions)** &rarr; **Apps Script**.
-2. Hapus seluruh isi kode bawaan di editor `Code.gs`.
-3. Buka file **`Code.gs`** yang ada di folder proyek ini (atau salin dari tombol *Salin Kode* di menu Google Sheets pada website), lalu paste ke editor Apps Script.
-4. Klik ikon **Simpan (Save)** (ikon disket).
-
-### Langkah 3: Deploy sebagai Web App
-1. Di pojok kanan atas Apps Script, klik tombol biru **Deploy (Terapkan)** &rarr; pilih **New deployment (Penerapan baru)**.
-2. Klik ikon gerigi di sebelah *Select type*, pilih **Web app (Aplikasi Web)**.
-3. Konfigurasikan:
-   - **Description**: `Inventaris API`
-   - **Execute as**: `Me (Email Anda)`
-   - **Who has access**: `Anyone (Siapa saja)` *(Sangat penting agar website dapat membaca dan menyimpan data)*
-4. Klik **Deploy**, lalu klik **Authorize access** (Izinkan akses akun Google Anda).
-5. Salin teks **Web app URL** yang muncul (berakhiran `/exec`).
-
-### Langkah 4: Masukkan URL ke Website
-1. Kembali ke website dashboard, klik tombol hijau **Google Sheets** di navbar atas.
-2. Tempelkan (*paste*) URL Web App tadi ke kolom **Google Apps Script Web App URL**.
-3. Klik tombol **Test Koneksi**. Jika muncul notifikasi hijau *Koneksi Berhasil*, klik tombol **Kirim Semua Data ke Sheets** untuk mengisi 338 part ke spreadsheet Anda!
-4. Centang pilihan **Aktifkan Auto-Sync Otomatis**, lalu klik **Simpan Pengaturan**.
-
-Selesai! Sekarang Anda dapat mengedit stok langsung dari Google Sheets maupun dari website, dan keduanya akan selalu terhubung secara real-time!
+Selesai! Sekarang data di website dan Google Sheets akan tersinkronisasi secara real-time.

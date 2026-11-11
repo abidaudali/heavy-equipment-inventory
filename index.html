@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Manajemen Inventaris Spare Part Alat Berat</title>
+  <title>PT. STAR WAGEN INDONESIA - VIB | Sistem Manajemen Inventaris Spare Part Alat Berat</title>
   
   <!-- Google Fonts: Inter & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,6 +16,9 @@
   <!-- Chart.js 4.4 -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -25,37 +28,40 @@
   <header class="top-navbar">
     <div class="brand-wrapper">
       <div class="brand-icon">
-        <i class="fa-solid fa-truck-monster"></i>
+        <img src="assets/logo.jpg" alt="Logo PT. STAR WAGEN INDONESIA - VIB" class="brand-logo-img">
       </div>
       <div class="brand-text">
-        <h1>Heavy Equipment Inventory</h1>
-        <p>Sistem Pengendalian Stok Spare Part & Google Sheets Live Sync</p>
+        <h1>PT. STAR WAGEN INDONESIA - VIB</h1>
+        <p>90ldIntrovert x SWI</p>
       </div>
     </div>
 
     <div class="nav-controls">
+      <!-- Admin / Pengunjung Authentication Controls -->
+      <div id="adminAuthControls"></div>
+
       <!-- Sync Status Badge -->
-      <div class="sync-badge" id="syncStatusBadge" onclick="openSettingsModal()" title="Klik untuk membuka pengaturan sinkronisasi">
+      <div class="sync-badge" id="syncStatusBadge" title="Klik untuk membuka status & pengaturan Google Sheets">
         <span class="sync-dot" id="syncDot"></span>
         <span id="syncLabel">Memeriksa koneksi...</span>
       </div>
 
       <!-- Quick Sync Button -->
-      <button class="btn btn-secondary" id="btnSyncNow" title="Tarik data terbaru dari Google Sheets">
+      <button class="btn btn-secondary" id="btnSyncNow" title="Tarik / Segarkan data terbaru dari Google Sheets Cloud">
         <i class="fa-solid fa-arrows-rotate"></i>
         <span>Sync Now</span>
       </button>
 
       <!-- Google Sheets Settings Button -->
-      <button class="btn btn-sheet" id="btnOpenSettings">
+      <button class="btn btn-sheet" id="btnOpenSettings" title="Konfigurasi Google Apps Script">
         <i class="fa-solid fa-table"></i>
         <span>Google Sheets</span>
       </button>
 
-      <!-- Add New Part Button -->
-      <button class="btn btn-primary" id="btnAddNew">
-        <i class="fa-solid fa-plus"></i>
-        <span>Tambah Part</span>
+      <!-- Backup & Restore Button -->
+      <button class="btn btn-secondary" id="btnOpenBackup" title="Backup & Restore Database">
+        <i class="fa-solid fa-database"></i>
+        <span>Backup</span>
       </button>
 
       <!-- Dark/Light Theme Toggle -->
@@ -65,327 +71,1089 @@
     </div>
   </header>
 
+  <!-- Main Navigation Tabs Bar (6 Modules Requested) -->
+  <nav class="main-nav-bar" id="mainNavBar">
+    <button class="nav-tab-btn active" data-view="dashboard">
+      <i class="fa-solid fa-gauge-high"></i>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-tab-btn" data-view="master">
+      <i class="fa-solid fa-boxes-stacked"></i>
+      <span>Master Data Material</span>
+    </button>
+    <button class="nav-tab-btn" data-view="daily">
+      <i class="fa-solid fa-calendar-day"></i>
+      <span>Daily Stock Update</span>
+    </button>
+    <button class="nav-tab-btn" data-view="import">
+      <i class="fa-solid fa-file-excel" style="color: #34d399;"></i>
+      <span>Bulk Data Import</span>
+      <span class="nav-pill-badge">Excel Paste Massal</span>
+    </button>
+    <button class="nav-tab-btn" data-view="history">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <span>Stock History</span>
+    </button>
+    <button class="nav-tab-btn" data-view="reports">
+      <i class="fa-solid fa-chart-line"></i>
+      <span>Reports</span>
+    </button>
+  </nav>
+
   <!-- Main Container -->
   <main class="app-container">
 
-    <!-- KPI Cards Grid -->
-    <section class="stats-grid">
-      <!-- Total Items -->
-      <div class="glass-panel stat-card total">
-        <div class="stat-info">
-          <h3>Total Item Part</h3>
-          <div class="stat-value" id="kpiTotalItems">0</div>
-          <div class="stat-sub">
-            <i class="fa-solid fa-boxes-stacked"></i> Terdaftar di sistem
+    <!-- ====================================================================
+         VIEW 1: DASHBOARD (ACCESSIBLE TO BOTH ADMIN & VISITORS)
+         ==================================================================== -->
+    <div class="app-view active" id="viewDashboard">
+      
+      <!-- Corporate Banner & Brand Showcase -->
+      <section class="brand-hero-panel glass-panel">
+        <div class="brand-hero-header">
+          <div class="brand-hero-header-left">
+            <div class="brand-hero-logo-box">
+              <img src="assets/logo.jpg" alt="Logo PT. STAR WAGEN INDONESIA - VIB" class="hero-logo-img">
+            </div>
+            <div class="brand-hero-title">
+              <span class="brand-hero-pill">
+                <i class="fa-solid fa-building-circle-check"></i> Official Fleet &amp; Corporate Hub
+              </span>
+              <h3>PT. STAR WAGEN INDONESIA - VIB</h3>
+              <p><span class="hero-collab-badge">90ldIntrovert x SWI</span> &bull; Authorized Dealer: Mercedes-Benz &bull; SAKAI &bull; Atlas Copco</p>
+            </div>
+          </div>
+          <div class="brand-hero-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnOpenHeroLightbox" title="Perbesar foto armada & gedung">
+              <i class="fa-solid fa-expand"></i> <span>Lihat Foto Penuh</span>
+            </button>
           </div>
         </div>
-        <div class="stat-icon">
-          <i class="fa-solid fa-cubes"></i>
-        </div>
-      </div>
 
-      <!-- Total Qty Stock -->
-      <div class="glass-panel stat-card optimal">
-        <div class="stat-info">
-          <h3>Total Unit Stok</h3>
-          <div class="stat-value" id="kpiTotalStock">0</div>
-          <div class="stat-sub">
-            <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Fisik tersedia
+        <div class="brand-hero-image-box" id="heroBannerClickable" title="Klik untuk memperbesar gambar">
+          <img src="assets/star-wagen-hero.jpg" alt="PT. STAR WAGEN INDONESIA - VIB | Mercedes-Benz, SAKAI, Atlas Copco" class="brand-hero-img">
+          <div class="brand-hero-badge-float">
+            <i class="fa-solid fa-shield-halved"></i> Member of VIB
           </div>
         </div>
-        <div class="stat-icon">
-          <i class="fa-solid fa-layer-group"></i>
-        </div>
-      </div>
+      </section>
 
-      <!-- Understock Alert -->
-      <div class="glass-panel stat-card understock">
-        <div class="stat-info">
-          <h3>Understock (Kritis)</h3>
-          <div class="stat-value" id="kpiUnderstock" style="color: var(--warning);">0</div>
-          <div class="stat-sub">
-            <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning);"></i> Di bawah batas minimum
+      <!-- KPI Cards Grid -->
+      <section class="stats-grid">
+        <!-- Total Items -->
+        <div class="glass-panel stat-card total">
+          <div class="stat-info">
+            <h3>Total Master Material</h3>
+            <div class="stat-value" id="kpiTotalItems">0</div>
+            <div class="stat-sub">
+              <i class="fa-solid fa-cubes"></i> Kode Material Terdaftar
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="fa-solid fa-boxes-stacked"></i>
           </div>
         </div>
-        <div class="stat-icon">
-          <i class="fa-solid fa-circle-exclamation"></i>
-        </div>
-      </div>
 
-      <!-- Out of Stock -->
-      <div class="glass-panel stat-card outstock">
-        <div class="stat-info">
-          <h3>Habis (Out of Stock)</h3>
-          <div class="stat-value" id="kpiOutOfStock" style="color: var(--danger);">0</div>
-          <div class="stat-sub">
-            <i class="fa-solid fa-ban" style="color: var(--danger);"></i> Perlu segera diorder (OOD)
+        <!-- Total Qty Stock -->
+        <div class="glass-panel stat-card optimal">
+          <div class="stat-info">
+            <h3>Total Unit Stok</h3>
+            <div class="stat-value" id="kpiTotalStock">0</div>
+            <div class="stat-sub">
+              <i class="fa-solid fa-circle-check" style="color: var(--success);"></i> Fisik tersedia saat ini
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="fa-solid fa-layer-group"></i>
           </div>
         </div>
-        <div class="stat-icon">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-      </div>
 
-      <!-- Overstock -->
-      <div class="glass-panel stat-card overstock">
-        <div class="stat-info">
-          <h3>Overstock (Surplus)</h3>
-          <div class="stat-value" id="kpiOverstock" style="color: var(--info);">0</div>
-          <div class="stat-sub">
-            <i class="fa-solid fa-arrow-trend-up" style="color: var(--info);"></i> Melebihi batas max
+        <!-- Understock Alert -->
+        <div class="glass-panel stat-card understock">
+          <div class="stat-info">
+            <h3>Understock (&lt; Min)</h3>
+            <div class="stat-value" id="kpiUnderstock" style="color: var(--warning);">0</div>
+            <div class="stat-sub">
+              <i class="fa-solid fa-triangle-exclamation" style="color: var(--warning);"></i> Di bawah batas aman
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="fa-solid fa-circle-exclamation"></i>
           </div>
         </div>
-        <div class="stat-icon">
-          <i class="fa-solid fa-warehouse"></i>
-        </div>
-      </div>
 
-      <!-- Brands Count -->
-      <div class="glass-panel stat-card brands">
-        <div class="stat-info">
-          <h3>Produsen Alat</h3>
-          <div class="stat-value" id="kpiBrands">0</div>
-          <div class="stat-sub">
-            <i class="fa-solid fa-screwdriver-wrench"></i> MBZ, ACI, SAKAI, SIP
+        <!-- Out of Stock -->
+        <div class="glass-panel stat-card outstock">
+          <div class="stat-info">
+            <h3>Habis (0 Stok)</h3>
+            <div class="stat-value" id="kpiOutOfStock" style="color: var(--danger);">0</div>
+            <div class="stat-sub">
+              <i class="fa-solid fa-ban" style="color: var(--danger);"></i> Perlu segera diorder (OOD)
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
         </div>
-        <div class="stat-icon">
-          <i class="fa-solid fa-industry"></i>
-        </div>
-      </div>
-    </section>
 
-    <!-- Visual Analytics Charts Section -->
-    <section class="charts-grid">
-      <!-- Chart 1: Status Distribution -->
-      <div class="glass-panel chart-card col-4">
-        <div class="chart-header">
-          <h3><i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> Distribusi Status Stok</h3>
-          <span class="badge-count">Kesehatan Stok</span>
-        </div>
-        <div class="chart-container">
-          <canvas id="statusChartCanvas"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 2: Inventory by Brand / Producer -->
-      <div class="glass-panel chart-card col-4">
-        <div class="chart-header">
-          <h3><i class="fa-solid fa-chart-simple" style="color: var(--accent);"></i> Komposisi per Produsen</h3>
-          <span class="badge-count">Alat Berat</span>
-        </div>
-        <div class="chart-container">
-          <canvas id="brandChartCanvas"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 3: Periodic Service vs Non-PS -->
-      <div class="glass-panel chart-card col-4">
-        <div class="chart-header">
-          <h3><i class="fa-solid fa-gauge-high" style="color: var(--success);"></i> Tipe Servis Part</h3>
-          <span class="badge-count">PS vs Non-PS</span>
-        </div>
-        <div class="chart-container">
-          <canvas id="serviceChartCanvas"></canvas>
-        </div>
-      </div>
-
-      <!-- Chart 4: Top 10 Critical Low Stock Items -->
-      <div class="glass-panel chart-card col-12">
-        <div class="chart-header">
-          <h3><i class="fa-solid fa-bell" style="color: var(--danger);"></i> 10 Part Paling Kritis (Stok Saat Ini vs Batas Minimum)</h3>
-          <span class="badge-count" style="background: var(--danger-bg); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">Prioritas Restock</span>
-        </div>
-        <div class="chart-container" style="height: 300px;">
-          <canvas id="criticalChartCanvas"></canvas>
-        </div>
-      </div>
-    </section>
-
-    <!-- Controls & Filters Section -->
-    <section class="glass-panel controls-panel">
-      <!-- Search & Quick Tabs -->
-      <div class="filter-row-top">
-        <div class="search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="searchInput" class="search-input" placeholder="Cari Part Number, Deskripsi, Model Unit, Alternate PN...">
+        <!-- Overstock -->
+        <div class="glass-panel stat-card overstock">
+          <div class="stat-info">
+            <h3>Overstock (&gt; Max)</h3>
+            <div class="stat-value" id="kpiOverstock" style="color: var(--info);">0</div>
+            <div class="stat-sub">
+              <i class="fa-solid fa-arrow-trend-up" style="color: var(--info);"></i> Melebihi kapasitas max
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="fa-solid fa-warehouse"></i>
+          </div>
         </div>
 
-        <div class="quick-filter-tabs">
-          <button class="tab-pill active" data-filter="ALL">
-            Semua <span class="pill-count" id="countAll">0</span>
+        <!-- Total Valuation -->
+        <div class="glass-panel stat-card brands">
+          <div class="stat-info">
+            <h3>Total Nilai Inventaris</h3>
+            <div class="stat-value" id="kpiTotalValuation" style="font-size: 1.35rem; color: #a78bfa;">Rp 0</div>
+            <div class="stat-sub">
+              <i class="fa-solid fa-coins"></i> Valuasi fisik stok (IDR)
+            </div>
+          </div>
+          <div class="stat-icon">
+            <i class="fa-solid fa-money-bill-trend-up"></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- Visual Analytics Charts Section -->
+      <section class="charts-grid">
+        <!-- Chart 1: Status Distribution -->
+        <div class="glass-panel chart-card col-4">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-pie" style="color: var(--primary);"></i> Distribusi Status Stok</h3>
+            <span class="badge-count">Kesehatan Stok</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="statusChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Inventory by Brand / Location -->
+        <div class="glass-panel chart-card col-4">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-simple" style="color: var(--accent);"></i> Komposisi per Lokasi Gudang</h3>
+            <span class="badge-count">Lokasi Fisik</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="brandChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Periodic Service & LIB Breakdown -->
+        <div class="glass-panel chart-card col-4">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-gauge-high" style="color: var(--success);"></i> Tipe Servis & Kategori LIB</h3>
+            <span class="badge-count">PS & LIB</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="serviceChartCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Top 10 Critical Low Stock Items -->
+        <div class="glass-panel chart-card col-12">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-bell" style="color: var(--danger);"></i> 10 Part Paling Kritis (Stok Aktual vs Batas Minimum)</h3>
+            <span class="badge-count" style="background: var(--danger-bg); color: var(--danger); border-color: rgba(239, 68, 68, 0.3);">Prioritas Restock</span>
+          </div>
+          <div class="chart-container" style="height: 300px;">
+            <canvas id="criticalChartCanvas"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard Quick Shortcuts -->
+      <section class="glass-panel" style="padding: 1.5rem; margin-top: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-bolt" style="color: #fbbf24;"></i> Akses Cepat Alur Kerja Harian
+          </h3>
+          <span style="font-size: 0.8rem; color: var(--text-secondary);">Gunakan menu tab di atas atau tombol pintas di bawah</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+          <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; cursor: pointer; transition: all 0.2s;" onclick="switchAppView('import')">
+            <div style="font-size: 1.3rem; color: #34d399; margin-bottom: 0.4rem;"><i class="fa-solid fa-file-excel"></i></div>
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Bulk Data Import (Excel Paste)</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Salin tabel Excel dari kantor dan tempel langsung untuk update QTY, Min/Max, PS/LIB massal.</div>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; cursor: pointer; transition: all 0.2s;" onclick="switchAppView('master')">
+            <div style="font-size: 1.3rem; color: #a78bfa; margin-bottom: 0.4rem;"><i class="fa-solid fa-boxes-stacked"></i></div>
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Master Data Material</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Katalog suku cadang lengkap dengan filter lokasi, status PS/NON PS, dan kategori LIB.</div>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; cursor: pointer; transition: all 0.2s;" onclick="switchAppView('daily')">
+            <div style="font-size: 1.3rem; color: #38bdf8; margin-bottom: 0.4rem;"><i class="fa-solid fa-calendar-plus"></i></div>
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Input Mutasi Stok Harian</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Catat barang masuk (IN) dan keluar (OUT) per tanggal dengan saldo SISA terhitung dinamis.</div>
+          </div>
+          <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; cursor: pointer; transition: all 0.2s;" onclick="switchAppView('reports')">
+            <div style="font-size: 1.3rem; color: #f472b6; margin-bottom: 0.4rem;"><i class="fa-solid fa-print"></i></div>
+            <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Laporan & Rekap Stok</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Cek posisi stok pada tanggal tertentu dan cetak atau ekspor laporan ke format PDF / Excel.</div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ====================================================================
+         VIEW 2: MASTER DATA MATERIAL
+         ==================================================================== -->
+    <div class="app-view" id="viewMaster">
+      
+      <!-- View Header -->
+      <div class="view-header">
+        <div class="view-header-title">
+          <h2><i class="fa-solid fa-boxes-stacked" style="color: var(--primary);"></i> Master Data Material</h2>
+          <p id="masterViewSubTitle">Katalog tunggal suku cadang alat berat dengan Kode Material unik, lokasi, harga, dan stok.</p>
+        </div>
+        <div class="view-header-actions">
+          <button class="btn btn-primary" id="btnAddNewMaster">
+            <i class="fa-solid fa-plus"></i>
+            <span>Tambah Material Baru</span>
           </button>
-          <button class="tab-pill" data-filter="KRITIS" style="--pill-color: var(--danger);">
-            <i class="fa-solid fa-triangle-exclamation" style="color: #f87171;"></i> Kritis / Butuh Order
-            <span class="pill-count" id="countKritis">0</span>
-          </button>
-          <button class="tab-pill" data-filter="HABIS">
-            Habis <span class="pill-count" id="countHabis">0</span>
-          </button>
-          <button class="tab-pill" data-filter="UNDERSTOCK">
-            Understock <span class="pill-count" id="countUnderstock">0</span>
-          </button>
-          <button class="tab-pill" data-filter="OPTIMAL">
-            Optimal <span class="pill-count" id="countOptimal">0</span>
-          </button>
-          <button class="tab-pill" data-filter="OVERSTOCK">
-            Overstock <span class="pill-count" id="countOverstock">0</span>
-          </button>
-          <button class="tab-pill" data-filter="PS">
-            <i class="fa-solid fa-wrench"></i> Periodic Service (PS)
-          </button>
-        </div>
-      </div>
-
-      <!-- Advanced Dropdown Filters & Export Actions -->
-      <div class="filter-row-bottom">
-        <div class="filter-selects">
-          <div class="select-group">
-            <label for="filterProd">Produsen:</label>
-            <select id="filterProd" class="filter-dropdown">
-              <option value="ALL">Semua Produsen</option>
-            </select>
-          </div>
-
-          <div class="select-group">
-            <label for="filterModel">Model Unit:</label>
-            <select id="filterModel" class="filter-dropdown">
-              <option value="ALL">Semua Model Unit</option>
-            </select>
-          </div>
-
-          <div class="select-group">
-            <label for="filterStock">Status Stok:</label>
-            <select id="filterStock" class="filter-dropdown">
-              <option value="ALL">Semua Status</option>
-              <option value="OUT_OF_STOCK">Habis (0 Qty)</option>
-              <option value="UNDERSTOCK">Understock (&lt; Min)</option>
-              <option value="OPTIMAL">Optimal</option>
-              <option value="OVERSTOCK">Overstock (&gt; Max)</option>
-            </select>
-          </div>
-
-          <div class="select-group">
-            <label for="filterService">Tipe Servis:</label>
-            <select id="filterService" class="filter-dropdown">
-              <option value="ALL">Semua Tipe</option>
-              <option value="PS">Periodic Service (PS)</option>
-              <option value="NON_PS">Non-PS</option>
-            </select>
-          </div>
-
-          <div class="select-group">
-            <label for="pageSizeSelect">Baris:</label>
-            <select id="pageSizeSelect" class="filter-dropdown">
-              <option value="10">10</option>
-              <option value="25" selected>25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-              <option value="ALL">Semua</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Export Buttons -->
-        <div class="export-actions">
-          <button class="btn btn-secondary" id="btnExportCsv" title="Download file CSV">
+          <button class="btn btn-secondary" id="btnExportMasterCsv" title="Download Master Data (CSV)">
             <i class="fa-solid fa-file-csv"></i> CSV
           </button>
-          <button class="btn btn-secondary" id="btnExportJson" title="Download JSON">
+          <button class="btn btn-secondary" id="btnExportMasterJson" title="Download Master Data (JSON)">
             <i class="fa-solid fa-code"></i> JSON
           </button>
-          <button class="btn btn-secondary" id="btnPrint" title="Cetak atau Simpan PDF">
-            <i class="fa-solid fa-print"></i> Print
+        </div>
+      </div>
+
+      <!-- Controls & Filter Section for Master Data -->
+      <section class="glass-panel controls-panel">
+        <div class="filter-row-top">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchMasterInput" class="search-input" placeholder="Cari Kode Material, Nama Material, Lokasi, Model Unit...">
+          </div>
+          
+          <div class="quick-filter-tabs">
+            <button class="tab-pill active" data-master-tab="ALL">
+              Semua <span class="pill-count" id="countMasterAll">0</span>
+            </button>
+            <button class="tab-pill" data-master-tab="OPTIMAL">
+              Optimal <span class="pill-count" id="countMasterOptimal">0</span>
+            </button>
+            <button class="tab-pill" data-master-tab="UNDERSTOCK">
+              Understock <span class="pill-count" id="countMasterUnderstock">0</span>
+            </button>
+            <button class="tab-pill" data-master-tab="HABIS">
+              Habis (0) <span class="pill-count" id="countMasterHabis">0</span>
+            </button>
+            <button class="tab-pill" data-master-tab="OVERSTOCK">
+              Overstock <span class="pill-count" id="countMasterOverstock">0</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-row-bottom">
+          <div class="filter-selects">
+            <div class="select-group">
+              <label for="filterMasterLokasi">Lokasi:</label>
+              <select id="filterMasterLokasi" class="filter-dropdown">
+                <option value="ALL">Semua Lokasi</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="filterMasterService">Servis:</label>
+              <select id="filterMasterService" class="filter-dropdown">
+                <option value="ALL">Semua Servis</option>
+                <option value="PS">Periodic Service (PS)</option>
+                <option value="NON PS">Non-PS</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="filterMasterLib">Kategori:</label>
+              <select id="filterMasterLib" class="filter-dropdown">
+                <option value="ALL">Semua Kategori</option>
+                <option value="LIB">LIB (Pelumas/Oli)</option>
+                <option value="NON LIB">NON LIB</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="pageSizeMaster">Baris:</label>
+              <select id="pageSizeMaster" class="filter-dropdown">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="ALL">Semua</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Master Data Table with Checkbox & Interactive Toggles -->
+      <section class="glass-panel table-panel" style="position: relative;">
+        <div class="table-responsive">
+          <table class="inventory-table">
+            <thead id="masterTableHead">
+              <tr>
+                <th style="width: 44px; text-align: center;">
+                  <input type="checkbox" id="checkSelectAllMaster" title="Pilih Semua Part">
+                </th>
+                <th style="width: 50px;">No</th>
+                <th data-sort="kodeMaterial">Kode Material <i class="fa-solid fa-sort"></i></th>
+                <th data-sort="lokasi">Lokasi <i class="fa-solid fa-sort"></i></th>
+                <th data-sort="namaMaterial">Nama Material <i class="fa-solid fa-sort"></i></th>
+                <th style="text-align: center;" data-sort="status">Servis (PS) <i class="fa-solid fa-sort"></i></th>
+                <th style="text-align: center;" data-sort="libCategory">Kategori <i class="fa-solid fa-sort"></i></th>
+                <th>Min - Max</th>
+                <th data-sort="stokSaatIni">Stok (QTY) <i class="fa-solid fa-sort"></i></th>
+                <th>Status</th>
+                <th data-sort="price">Harga Satuan <i class="fa-solid fa-sort"></i></th>
+                <th style="width: 125px; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="masterTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-wrapper">
+          <div class="pagination-info" id="masterPaginationInfo">Memuat data master...</div>
+          <div class="pagination-controls" id="masterPaginationControls"></div>
+        </div>
+      </section>
+
+      <!-- Floating Bulk Action Bar (For Admin when rows are checked) -->
+      <div class="bulk-action-bar" id="masterBulkBar" style="display: none;">
+        <div class="bulk-bar-info">
+          <i class="fa-solid fa-list-check"></i>
+          <span><strong id="selectedMasterCount">0</strong> Part Terpilih</span>
+        </div>
+        <div class="bulk-bar-actions">
+          <button type="button" class="btn btn-sm btn-outline-success" id="btnBulkSetPS" title="Ubah semua yang dipilih menjadi PS">
+            <i class="fa-solid fa-wrench"></i> Set PS
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnBulkSetNonPS" title="Ubah menjadi NON PS">
+            <i class="fa-solid fa-ban"></i> Set NON PS
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-info" id="btnBulkSetLIB" title="Ubah menjadi LIB">
+            <i class="fa-solid fa-oil-can"></i> Set LIB
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnBulkSetNonLIB" title="Ubah menjadi NON LIB">
+            <i class="fa-solid fa-cube"></i> Set NON LIB
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-primary" id="btnBulkOpenLocation" title="Ubah lokasi penyimpanan massal">
+            <i class="fa-solid fa-location-dot"></i> Pindah Lokasi
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-warning" id="btnBulkOpenQty" title="Ubah / sesuaikan stok QTY massal">
+            <i class="fa-solid fa-plus-minus"></i> Ubah QTY
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-warning" id="btnBulkOpenMinMax" title="Ubah batas aman Min & Max massal">
+            <i class="fa-solid fa-sliders"></i> Set Min/Max
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger" id="btnBulkDeleteSelected" title="Hapus part terpilih">
+            <i class="fa-solid fa-trash"></i> Hapus
+          </button>
+          <button type="button" class="btn btn-sm btn-secondary" id="btnBulkDeselect">
+            <i class="fa-solid fa-xmark"></i> Batal
           </button>
         </div>
       </div>
-    </section>
 
-    <!-- Main Inventory Table -->
-    <section class="glass-panel table-panel">
-      <div class="table-responsive">
-        <table class="inventory-table">
-          <thead>
-            <tr>
-              <th data-sort="no" style="width: 60px;">No <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="prod">Produsen <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="modelUnit">Model Unit <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="pnFinal">Part Number & Alternate <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="desc">Deskripsi Part <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="status">Servis <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="qty">Stok Fisik <i class="fa-solid fa-sort"></i></th>
-              <th>Status Kesehatan</th>
-              <th style="width: 140px; text-align: center;">Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="inventoryTableBody">
-            <!-- Rendered by JS -->
-          </tbody>
-        </table>
-      </div>
+    </div>
 
-      <!-- Pagination Footer -->
-      <div class="pagination-wrapper">
-        <div class="pagination-info" id="paginationInfo">
-          Memuat data...
+    <!-- ====================================================================
+         VIEW 3: DAILY STOCK UPDATE
+         ==================================================================== -->
+    <div class="app-view" id="viewDaily">
+      
+      <!-- View Header -->
+      <div class="view-header">
+        <div class="view-header-title">
+          <h2><i class="fa-solid fa-calendar-day" style="color: #38bdf8;"></i> Daily Stock Update</h2>
+          <p>Pencatatan mutasi stok harian (Barang Masuk & Keluar). Saldo SISA dihitung dinamis tanpa perulangan data material.</p>
         </div>
-        <div class="pagination-controls" id="paginationControls">
-          <!-- Rendered by JS -->
+        <div class="view-header-actions">
+          <button class="btn btn-secondary" id="btnDailyTodayFilter">
+            <i class="fa-solid fa-calendar-check"></i> Hari Ini
+          </button>
+          <button class="btn btn-secondary" id="btnExportDailyCsv" title="Download Riwayat Harian (CSV)">
+            <i class="fa-solid fa-file-csv"></i> CSV
+          </button>
         </div>
       </div>
-    </section>
+
+      <!-- Guest Notice Banner (Shown for Visitors) -->
+      <div class="guest-lock-banner" id="dailyGuestNotice" style="display: none;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="font-size: 1.5rem; color: var(--warning);"><i class="fa-solid fa-eye"></i></div>
+          <div>
+            <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem;">Mode Pengunjung (Read-Only)</div>
+            <div style="font-size: 0.8rem; color: var(--text-secondary);">Anda sedang melihat mutasi stok harian aktual. Form input mutasi stok hanya dapat diakses oleh Admin.</div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-warning btn-sm" onclick="openAdminLoginModal(null, 'Input Mutasi Harian')">
+          <i class="fa-solid fa-lock"></i> Login Admin
+        </button>
+      </div>
+
+      <!-- Quick Daily Transaction Input Form (For Admin) -->
+      <section class="glass-panel daily-quick-form" id="dailyQuickFormCard">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: #93c5fd; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-pen-to-square"></i> Form Input / Update Transaksi Harian
+          </h4>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Jika sudah ada transaksi di tanggal ini, sistem akan memperbaruinya (UPSERT).</span>
+        </div>
+        <form id="dailyQuickForm">
+          <div class="daily-form-grid">
+            <div class="form-group">
+              <label for="dailyFormDate">Tanggal *</label>
+              <input type="date" id="dailyFormDate" class="form-control" required>
+            </div>
+
+            <div class="form-group" style="min-width: 220px;">
+              <label for="dailyFormKode">Kode Material *</label>
+              <input type="text" id="dailyFormKode" class="form-control" required placeholder="Ketik Kode / Part Number..." list="masterKodeList" autocomplete="off">
+              <datalist id="masterKodeList"></datalist>
+            </div>
+
+            <div class="form-group" style="min-width: 200px;">
+              <label for="dailyFormNama">Nama Material</label>
+              <input type="text" id="dailyFormNama" class="form-control" placeholder="Terisi otomatis..." readonly style="background: rgba(15, 23, 42, 0.4);">
+            </div>
+
+            <div class="form-group" style="max-width: 110px;">
+              <label for="dailyFormIn" style="color: #34d399;">IN (Masuk)</label>
+              <input type="number" id="dailyFormIn" class="form-control" min="0" value="0">
+            </div>
+
+            <div class="form-group" style="max-width: 110px;">
+              <label for="dailyFormOut" style="color: #f87171;">OUT (Keluar)</label>
+              <input type="number" id="dailyFormOut" class="form-control" min="0" value="0">
+            </div>
+
+            <div class="form-group" style="max-width: 100px;">
+              <label for="dailyFormUtd">UTD</label>
+              <input type="text" id="dailyFormUtd" class="form-control" placeholder="Opsional">
+            </div>
+
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary" style="height: 42px; white-space: nowrap;">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Transaksi
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Filter Bar for Daily Stock -->
+      <section class="glass-panel controls-panel">
+        <div class="filter-row-top">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchDailyInput" class="search-input" placeholder="Cari Kode Material, Nama Material, Catatan...">
+          </div>
+        </div>
+
+        <div class="filter-row-bottom">
+          <div class="filter-selects">
+            <div class="select-group">
+              <label for="filterDailyDate">Tanggal:</label>
+              <input type="date" id="filterDailyDate" class="filter-dropdown" style="padding: 0.35rem 0.6rem;">
+            </div>
+
+            <div class="select-group">
+              <label for="filterDailyMonth">Bulan:</label>
+              <select id="filterDailyMonth" class="filter-dropdown">
+                <option value="ALL">Semua Bulan</option>
+                <option value="1">Januari</option>
+                <option value="2">Februari</option>
+                <option value="3">Maret</option>
+                <option value="4">April</option>
+                <option value="5">Mei</option>
+                <option value="6">Juni</option>
+                <option value="7">Juli</option>
+                <option value="8">Agustus</option>
+                <option value="9">September</option>
+                <option value="10">Oktober</option>
+                <option value="11">November</option>
+                <option value="12">Desember</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="filterDailyYear">Tahun:</label>
+              <select id="filterDailyYear" class="filter-dropdown">
+                <option value="ALL">Semua Tahun</option>
+                <option value="2026" selected>2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="filterDailyHour">Jam:</label>
+              <select id="filterDailyHour" class="filter-dropdown">
+                <option value="ALL">Semua Jam</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="pageSizeDaily">Baris:</label>
+              <select id="pageSizeDaily" class="filter-dropdown">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="ALL">Semua</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn btn-secondary btn-sm" id="btnResetDailyFilter" title="Reset Semua Filter">
+              <i class="fa-solid fa-rotate-left"></i> Reset
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Daily Transactions Table -->
+      <section class="glass-panel table-panel">
+        <div class="table-responsive">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>Tanggal</th>
+                <th>Jam</th>
+                <th>Kode Material</th>
+                <th>Nama Material</th>
+                <th>Lokasi</th>
+                <th>IN (Masuk)</th>
+                <th>OUT (Keluar)</th>
+                <th>UTD</th>
+                <th>SISA (Saldo Akhir)</th>
+                <th style="width: 120px; text-align: center;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="dailyTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-wrapper">
+          <div class="pagination-info" id="dailyPaginationInfo">Memuat transaksi harian...</div>
+          <div class="pagination-controls" id="dailyPaginationControls"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ====================================================================
+         VIEW 4: BULK DATA IMPORT (EXCEL COPY-PASTE MASSAL)
+         ==================================================================== -->
+    <div class="app-view" id="viewImport">
+      
+      <!-- View Header -->
+      <div class="view-header">
+        <div class="view-header-title">
+          <h2><i class="fa-solid fa-file-excel" style="color: #34d399;"></i> Bulk Data Import & Pembaruan Massal Excel</h2>
+          <p>Salin (Copy) tabel dari Excel berisi PN, QTY, Min, Max, PS/NON PS, LIB/NON LIB, Lokasi, dll. Tempel (Paste) di sini untuk update ratusan part sekaligus.</p>
+        </div>
+      </div>
+
+      <!-- Guest Locked Card (Shown for Visitors) -->
+      <div class="guest-import-card" id="importGuestNotice" style="display: none;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--warning-bg); color: var(--warning); display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Fitur Khusus Admin</h3>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); max-width: 520px; margin: 0 auto 1.5rem auto; line-height: 1.5;">
+          Halaman Bulk Data Import dan Pembaruan Massal Excel hanya dapat diakses oleh Admin untuk menjaga keamanan dan keutuhan data stok inventaris.
+        </p>
+        <button type="button" class="btn btn-warning" onclick="openAdminLoginModal(null, 'Akses Bulk Data Import')">
+          <i class="fa-solid fa-key"></i> Buka Akses Admin
+        </button>
+      </div>
+
+      <!-- Import Admin Workspace (Shown for Admin) -->
+      <div class="import-grid" id="importAdminWorkspace">
+        
+        <!-- Step 1: Input & Guide Card -->
+        <div class="import-hero-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: #93c5fd; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-paste"></i> Langkah 1: Tempelkan Tabel Excel (Kolom Bebas Disesuaikan)
+            </h3>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <label for="importDefaultDate" style="font-size: 0.82rem; color: var(--text-secondary); margin: 0;">
+                Tanggal Transaksi Default:
+              </label>
+              <input type="date" id="importDefaultDate" class="form-control" style="width: 160px; padding: 0.35rem 0.6rem;">
+            </div>
+          </div>
+
+          <!-- Format Guide Box -->
+          <div class="excel-guide-box">
+            <div style="font-weight: 600; margin-bottom: 0.4rem; color: #bfdbfe;">
+              <i class="fa-solid fa-circle-info"></i> Contoh Format Kolom Excel yang Otomatis Dikenali:
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>PN / KODE</th>
+                  <th>NAMA MATERIAL</th>
+                  <th>LOKASI</th>
+                  <th>QTY (STOK)</th>
+                  <th>MIN</th>
+                  <th>MAX</th>
+                  <th>SERVIS</th>
+                  <th>KATEGORI</th>
+                  <th>IN</th>
+                  <th>OUT</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>0092S37070</td>
+                  <td>BOSCH N170</td>
+                  <td>PALET E1</td>
+                  <td>25</td>
+                  <td>2</td>
+                  <td>10</td>
+                  <td>PS</td>
+                  <td>NON LIB</td>
+                  <td>5</td>
+                  <td>2</td>
+                </tr>
+                <tr>
+                  <td>0092S47011</td>
+                  <td>BOSCH N70-M</td>
+                  <td>PALET E1</td>
+                  <td>14</td>
+                  <td>1</td>
+                  <td>5</td>
+                  <td>NON PS</td>
+                  <td>NON LIB</td>
+                  <td>3</td>
+                  <td>1</td>
+                </tr>
+                <tr>
+                  <td>1028926812</td>
+                  <td>FILTRO DE OLEO</td>
+                  <td>PALET E2</td>
+                  <td>40</td>
+                  <td>5</td>
+                  <td>20</td>
+                  <td>PS</td>
+                  <td>LIB</td>
+                  <td>0</td>
+                  <td>2</td>
+                </tr>
+              </tbody>
+            </table>
+            <div style="margin-top: 0.5rem; font-size: 0.76rem; color: var(--text-muted);">
+              * Tip: Cukup blok tabel di Microsoft Excel / Google Sheets &rarr; <strong>Ctrl+C</strong> &rarr; klik kotak di bawah &rarr; <strong>Ctrl+V</strong> &rarr; klik <strong>Proses & Tampilkan Preview Data</strong>.
+            </div>
+          </div>
+
+          <!-- Paste Textarea -->
+          <textarea id="excelPasteArea" class="excel-paste-area" placeholder="Tempel (Paste / Ctrl+V) baris dari Excel di sini...&#10;Contoh:&#10;0092S37070&#9;BOSCH N170&#9;PALET E1&#9;25&#9;2&#9;10&#9;PS&#9;NON LIB&#10;0092S47011&#9;BOSCH N70-M&#9;PALET E1&#9;14&#9;1&#9;5&#9;NON PS&#9;NON LIB"></textarea>
+
+          <!-- Input Action Buttons -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem;">
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn btn-secondary" id="btnPasteClipboard">
+                <i class="fa-regular fa-clipboard"></i> Tempel dari Clipboard
+              </button>
+              <button type="button" class="btn btn-secondary" id="btnClearPaste">
+                <i class="fa-solid fa-eraser"></i> Bersihkan
+              </button>
+            </div>
+            <button type="button" class="btn btn-primary" id="btnProcessPreview" style="padding: 0.65rem 1.5rem; font-weight: 600;">
+              <i class="fa-solid fa-bolt"></i> Proses & Tampilkan Preview Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Live Preview & Verification Section -->
+        <div id="importPreviewContainer" style="display: none;">
+          
+          <!-- Summary Metrics Cards -->
+          <div class="preview-metrics-grid">
+            <div class="preview-metric-card" style="border-left: 4px solid var(--primary);">
+              <div class="preview-metric-icon" style="background: rgba(59, 130, 246, 0.15); color: var(--primary);">
+                <i class="fa-solid fa-list-check"></i>
+              </div>
+              <div class="preview-metric-info">
+                <div class="val" id="prevMetricTotal">0</div>
+                <div class="lbl">Total Baris Terbaca</div>
+              </div>
+            </div>
+
+            <div class="preview-metric-card" style="border-left: 4px solid #60a5fa;">
+              <div class="preview-metric-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">
+                <i class="fa-solid fa-plus-circle"></i>
+              </div>
+              <div class="preview-metric-info">
+                <div class="val" id="prevMetricNew">0</div>
+                <div class="lbl">Material Baru (Daftar Otomatis)</div>
+              </div>
+            </div>
+
+            <div class="preview-metric-card" style="border-left: 4px solid #c084fc;">
+              <div class="preview-metric-icon" style="background: rgba(139, 92, 246, 0.15); color: #c084fc;">
+                <i class="fa-solid fa-link"></i>
+              </div>
+              <div class="preview-metric-info">
+                <div class="val" id="prevMetricExisting">0</div>
+                <div class="lbl">Material Terdaftar (Update Kolom)</div>
+              </div>
+            </div>
+
+            <div class="preview-metric-card" style="border-left: 4px solid #34d399;">
+              <div class="preview-metric-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div class="preview-metric-info">
+                <div class="val" id="prevMetricValid">0</div>
+                <div class="lbl">Baris Valid Siap Update</div>
+              </div>
+            </div>
+
+            <div class="preview-metric-card" style="border-left: 4px solid #f87171;">
+              <div class="preview-metric-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div class="preview-metric-info">
+                <div class="val" id="prevMetricError">0</div>
+                <div class="lbl">Gagal / Format Salah</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Table Section -->
+          <section class="glass-panel table-panel" style="margin-bottom: 1.5rem;">
+            <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+              <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fa-solid fa-table-list"></i> Tabel Preview Data Sebelum Disimpan
+              </h3>
+              <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                Periksa data yang akan diupdate secara massal ke database.
+              </div>
+            </div>
+
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="inventory-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;">No</th>
+                    <th>Status</th>
+                    <th>Kode Material (PN)</th>
+                    <th>Nama Material</th>
+                    <th>Lokasi</th>
+                    <th>QTY</th>
+                    <th>Min - Max</th>
+                    <th>Servis (PS)</th>
+                    <th>Kategori (LIB)</th>
+                    <th>IN / OUT</th>
+                    <th>Keterangan Pembaruan</th>
+                  </tr>
+                </thead>
+                <tbody id="importPreviewTableBody">
+                  <!-- Rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Confirmation & Execution Bar -->
+            <div style="padding: 1.25rem; background: rgba(15, 23, 42, 0.5); border-top: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+              <button type="button" class="btn btn-secondary" id="btnCancelImport">
+                <i class="fa-solid fa-xmark"></i> Batal / Batalkan Proses
+              </button>
+
+              <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 0.82rem; color: #93c5fd;">
+                  <i class="fa-solid fa-shield-check"></i> Snapshot backup otomatis dibuat sebelum penyimpanan.
+                </div>
+                <button type="button" class="btn btn-primary" id="btnConfirmImport" style="padding: 0.75rem 1.75rem; font-weight: 700;">
+                  <i class="fa-solid fa-cloud-arrow-up"></i> Konfirmasi & Simpan Pembaruan Massal
+                </button>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ====================================================================
+         VIEW 5: STOCK HISTORY & AUDIT LOG
+         ==================================================================== -->
+    <div class="app-view" id="viewHistory">
+      
+      <!-- View Header -->
+      <div class="view-header">
+        <div class="view-header-title">
+          <h2><i class="fa-solid fa-clock-rotate-left" style="color: #a78bfa;"></i> Riwayat Perubahan Stok & Audit Log</h2>
+          <p>Pelacakan transparan setiap transaksi harian, mutasi stok, dan pencatatan audit perubahan oleh admin/user.</p>
+        </div>
+      </div>
+
+      <!-- Filter Controls for History -->
+      <section class="glass-panel controls-panel">
+        <div class="filter-row-top">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchHistoryInput" class="search-input" placeholder="Cari Kode Material, Nama Material, Aksi, User...">
+          </div>
+
+          <div class="quick-filter-tabs">
+            <button class="tab-pill active" id="tabHistoryLedger">
+              <i class="fa-solid fa-book-journal-whills"></i> Buku Besar Transaksi (Ledger)
+            </button>
+            <button class="tab-pill" id="tabHistoryAudit">
+              <i class="fa-solid fa-shield-halved"></i> Audit Log Sistem
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-row-bottom">
+          <div class="filter-selects">
+            <div class="select-group">
+              <label for="filterHistoryDate">Tanggal:</label>
+              <input type="date" id="filterHistoryDate" class="filter-dropdown" style="padding: 0.35rem 0.6rem;">
+            </div>
+
+            <div class="select-group">
+              <label for="filterHistoryHour">Jam:</label>
+              <select id="filterHistoryHour" class="filter-dropdown">
+                <option value="ALL">Semua Jam</option>
+              </select>
+            </div>
+
+            <div class="select-group">
+              <label for="filterHistoryLokasi">Lokasi:</label>
+              <select id="filterHistoryLokasi" class="filter-dropdown">
+                <option value="ALL">Semua Lokasi</option>
+              </select>
+            </div>
+
+            <button type="button" class="btn btn-secondary btn-sm" id="btnResetHistoryFilter">
+              <i class="fa-solid fa-rotate-left"></i> Reset Filter
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- History Table (Ledger or Audit Log) -->
+      <section class="glass-panel table-panel">
+        <div class="table-responsive">
+          <table class="inventory-table" id="historyTable">
+            <thead id="historyTableHead">
+              <!-- Rendered by JS based on active sub-tab -->
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-wrapper">
+          <div class="pagination-info" id="historyPaginationInfo">Memuat riwayat...</div>
+          <div class="pagination-controls" id="historyPaginationControls"></div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ====================================================================
+         VIEW 6: REPORTS & VALUATION
+         ==================================================================== -->
+    <div class="app-view" id="viewReports">
+      
+      <!-- View Header -->
+      <div class="view-header">
+        <div class="view-header-title">
+          <h2><i class="fa-solid fa-chart-line" style="color: #f472b6;"></i> Laporan Stok & Valuasi Inventaris</h2>
+          <p>Rekapitulasi posisi stok pada tanggal tertentu, mutasi barang masuk/keluar, dan laporan valuasi aset.</p>
+        </div>
+        <div class="view-header-actions">
+          <button class="btn btn-secondary" id="btnPrintReport">
+            <i class="fa-solid fa-print"></i> Cetak / PDF
+          </button>
+          <button class="btn btn-secondary" id="btnExportReportCsv">
+            <i class="fa-solid fa-file-csv"></i> Download CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Type Selector & Date Filter -->
+      <div class="report-tabs">
+        <button class="report-tab-pill active" data-report="as-of-date">
+          <i class="fa-solid fa-calendar-check"></i> Posisi Stok pada Tanggal Tertentu
+        </button>
+        <button class="report-tab-pill" data-report="valuation">
+          <i class="fa-solid fa-coins"></i> Valuasi Nilai Stok per Lokasi
+        </button>
+      </div>
+
+      <!-- Filter Controls for Report -->
+      <section class="glass-panel controls-panel" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div class="select-group" id="reportDateGroup">
+              <label for="reportTargetDate" style="font-weight: 600; color: var(--text-primary);">Pilih Tanggal Laporan:</label>
+              <input type="date" id="reportTargetDate" class="form-control" style="width: 170px; padding: 0.4rem 0.65rem;">
+            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="btnGenerateReport">
+              <i class="fa-solid fa-calculator"></i> Hitung Ulang Laporan
+            </button>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-secondary);" id="reportDateIndicator">
+            Menampilkan data stok per: <strong>Hari Ini</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- Report Table Section -->
+      <section class="glass-panel table-panel">
+        <div class="table-responsive">
+          <table class="inventory-table">
+            <thead id="reportTableHead">
+              <!-- Rendered by JS -->
+            </thead>
+            <tbody id="reportTableBody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination-wrapper">
+          <div class="pagination-info" id="reportPaginationInfo">Memuat laporan...</div>
+          <div class="pagination-controls" id="reportPaginationControls"></div>
+        </div>
+      </section>
+
+    </div>
 
   </main>
 
-  <!-- MODAL: Tambah / Edit Spare Part -->
+  <!-- ====================================================================
+       MODAL: LOGIN ADMIN (ACCESS CONTROL)
+       ==================================================================== -->
+  <div class="modal-overlay" id="adminLoginModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-shield-halved" style="color: var(--warning);"></i> Akses Admin Inventaris</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <form id="adminLoginForm">
+        <div class="modal-body">
+          <div style="text-align: center; margin-bottom: 1.25rem;">
+            <div style="width: 58px; height: 58px; border-radius: 50%; background: var(--warning-bg); color: var(--warning); display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 0.75rem;">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.4rem;">Verifikasi Kunci Admin</h4>
+            <p id="adminLoginPromptText" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">
+              Masukkan password admin untuk mengakses fitur ubah stok, tambah/edit data, dan konfigurasi Google Sheets.
+            </p>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.75rem;">
+            <label for="adminPassInput">Password Admin *</label>
+            <div style="position: relative;">
+              <input type="password" id="adminPassInput" class="form-control" required placeholder="Masukkan password admin..." autocomplete="current-password" style="padding-right: 44px;">
+              <button type="button" id="btnToggleAdminPass" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 6px; font-size: 1rem;" title="Lihat/Sembunyikan Password">
+                <i class="fa-solid fa-eye" id="adminPassEye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn btn-warning">
+            <i class="fa-solid fa-key"></i> Buka Akses Admin
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: GANTI PASSWORD ADMIN
+       ==================================================================== -->
+  <div class="modal-overlay" id="changePasswordModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-key" style="color: var(--primary);"></i> Ganti Password Admin</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <form id="changePasswordForm">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="currentPassInput">Password Saat Ini *</label>
+            <input type="password" id="currentPassInput" class="form-control" required placeholder="Password saat ini..." autocomplete="current-password">
+          </div>
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label for="newPassInput">Password Baru *</label>
+            <input type="password" id="newPassInput" class="form-control" required placeholder="Minimal 4 karakter..." minlength="4" autocomplete="new-password">
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem;">
+            <label for="confirmPassInput">Konfirmasi Password Baru *</label>
+            <input type="password" id="confirmPassInput" class="form-control" required placeholder="Ulangi password baru..." autocomplete="new-password">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-check"></i> Simpan Password Baru
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: TAMBAH / EDIT MASTER MATERIAL
+       ==================================================================== -->
   <div class="modal-overlay" id="partModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="partModalTitle"><i class="fa-solid fa-plus-circle"></i> Tambah Spare Part</h3>
+        <h3 id="partModalTitle"><i class="fa-solid fa-plus-circle"></i> Tambah Master Material</h3>
         <button class="modal-close" title="Tutup">&times;</button>
       </div>
       <form id="partForm">
-        <input type="hidden" id="editOriginalPn">
+        <input type="hidden" id="editOriginalKode">
         <div class="modal-body">
           <div class="form-grid">
             <div class="form-group">
-              <label for="formNo">Nomor Urut</label>
-              <input type="number" id="formNo" class="form-control" placeholder="1, 2, ...">
+              <label for="formKodeMaterial">Kode Material (UNIQUE) *</label>
+              <input type="text" id="formKodeMaterial" class="form-control" required placeholder="Contoh: 0092S37070, A9408905319">
+              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">Identitas unik material, tidak boleh sama.</div>
             </div>
 
             <div class="form-group">
-              <label for="formProd">Produsen / Brand *</label>
-              <input type="text" id="formProd" class="form-control" required placeholder="Contoh: MBZ, ACI, SAKAI, SIP">
-            </div>
-
-            <div class="form-group">
-              <label for="formModelUnit">Model Unit *</label>
-              <input type="text" id="formModelUnit" class="form-control" required placeholder="Contoh: AXOR 2528 E4, QAS170">
-            </div>
-
-            <div class="form-group">
-              <label for="formPnFinal">Part Number (Final PN) *</label>
-              <input type="text" id="formPnFinal" class="form-control" required placeholder="Contoh: A9408905319">
+              <label for="formLokasi">Lokasi Penyimpanan *</label>
+              <input type="text" id="formLokasi" class="form-control" required placeholder="Contoh: PALET E1, Rak A-3">
             </div>
 
             <div class="form-group col-span-2">
-              <label for="formDesc">Deskripsi Spare Part *</label>
-              <input type="text" id="formDesc" class="form-control" required placeholder="Contoh: FILTRO DE OLEO DO MOTOR">
-            </div>
-
-            <div class="form-group">
-              <label for="formMin">Batas Minimum (Min)</label>
-              <input type="number" id="formMin" class="form-control" placeholder="Batas aman stok">
-            </div>
-
-            <div class="form-group">
-              <label for="formMax">Batas Maksimum (Max)</label>
-              <input type="number" id="formMax" class="form-control" placeholder="Kapasitas maksimum">
-            </div>
-
-            <div class="form-group">
-              <label for="formQty">Jumlah Stok Saat Ini *</label>
-              <input type="number" id="formQty" class="form-control" required value="0" min="0">
+              <label for="formNamaMaterial">Nama Material / Deskripsi *</label>
+              <input type="text" id="formNamaMaterial" class="form-control" required placeholder="Contoh: BOSCH N170, FILTRO DE OLEO">
             </div>
 
             <div class="form-group">
@@ -397,42 +1165,301 @@
             </div>
 
             <div class="form-group">
-              <label for="formDoi">Days of Inventory (DOI)</label>
-              <input type="number" id="formDoi" class="form-control" placeholder="Estimasi hari cadangan">
+              <label for="formLibCategory">Kategori Part (LIB vs NON LIB)</label>
+              <select id="formLibCategory" class="form-control">
+                <option value="NON LIB">NON LIB</option>
+                <option value="LIB">LIB (Pelumas / Oli / Lubricant)</option>
+              </select>
             </div>
 
             <div class="form-group">
-              <label for="formAltPn">Alternate Part Number</label>
-              <input type="text" id="formAltPn" class="form-control" placeholder="Contoh: A4729930896 (Qty: 2)">
+              <label for="formPrice">Price (Harga Satuan Rp)</label>
+              <input type="number" id="formPrice" class="form-control" min="0" placeholder="100000" value="0">
+            </div>
+
+            <div class="form-group">
+              <label for="formStokAwal">Stok Fisik (QTY)</label>
+              <input type="number" id="formStokAwal" class="form-control" min="0" placeholder="0" value="0">
+            </div>
+
+            <div class="form-group">
+              <label for="formMin">Batas Minimum (Min)</label>
+              <input type="number" id="formMin" class="form-control" placeholder="1" value="1">
+            </div>
+
+            <div class="form-group">
+              <label for="formMax">Batas Maksimum (Max)</label>
+              <input type="number" id="formMax" class="form-control" placeholder="5" value="5">
+            </div>
+
+            <div class="form-group">
+              <label for="formProd">Produsen / Brand</label>
+              <input type="text" id="formProd" class="form-control" placeholder="MBZ, ACI, SAKAI, SIP">
+            </div>
+
+            <div class="form-group">
+              <label for="formModelUnit">Model Unit</label>
+              <input type="text" id="formModelUnit" class="form-control" placeholder="AXOR, QAS170, SV526">
             </div>
 
             <div class="form-group col-span-2">
               <label for="formRemarks">Catatan / Remarks</label>
-              <input type="text" id="formRemarks" class="form-control" placeholder="Contoh: TIDAK TENTU, OOD, Lokasi Rak A-3">
+              <input type="text" id="formRemarks" class="form-control" placeholder="Catatan tambahan...">
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
           <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-floppy-disk"></i> Simpan Data
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Master Material
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: Pengaturan Google Sheets & Live Sync -->
+  <!-- ====================================================================
+       MODAL: BULK EDIT LOKASI
+       ==================================================================== -->
+  <div class="modal-overlay" id="bulkLocationModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-location-dot" style="color: var(--primary);"></i> Ubah Lokasi Massal</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <form id="bulkLocationForm">
+        <div class="modal-body">
+          <p id="bulkLocationPrompt" style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Masukkan nama lokasi baru untuk part terpilih:
+          </p>
+          <div class="form-group">
+            <label for="bulkLocationInput">Lokasi Baru *</label>
+            <input type="text" id="bulkLocationInput" class="form-control" required placeholder="Contoh: PALET E1, RAK B-2">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Terapkan Lokasi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: BULK EDIT QTY
+       ==================================================================== -->
+  <div class="modal-overlay" id="bulkQtyModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-plus-minus" style="color: var(--warning);"></i> Sesuaikan QTY Massal</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <form id="bulkQtyForm">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label>Metode Penyesuaian QTY:</label>
+            <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem;">
+                <input type="radio" name="qtyMode" value="set" checked> Set Nilai Pasti
+              </label>
+              <label style="cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.88rem;">
+                <input type="radio" name="qtyMode" value="delta"> Tambah / Kurang (+/-)
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="bulkQtyInput">Nilai QTY Baru *</label>
+            <input type="number" id="bulkQtyInput" class="form-control" required placeholder="Contoh: 10 (atau +5 / -2)">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn btn-warning"><i class="fa-solid fa-check"></i> Terapkan QTY</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: BULK EDIT MIN & MAX
+       ==================================================================== -->
+  <div class="modal-overlay" id="bulkMinMaxModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sliders" style="color: var(--primary);"></i> Set Batas Min & Max Massal</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <form id="bulkMinMaxForm">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="bulkMinInput">Batas Minimum (Min) *</label>
+              <input type="number" id="bulkMinInput" class="form-control" required min="0" placeholder="1">
+            </div>
+            <div class="form-group">
+              <label for="bulkMaxInput">Batas Maksimum (Max) *</label>
+              <input type="number" id="bulkMaxInput" class="form-control" required min="0" placeholder="5">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-check"></i> Terapkan Min & Max</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: EDIT TRANSAKSI DAILY STOCK
+       ==================================================================== -->
+  <div class="modal-overlay" id="editDailyModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-pen-to-square" style="color: #38bdf8;"></i> Edit Transaksi Stok Harian</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <form id="editDailyForm">
+        <input type="hidden" id="editDailyTxId">
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="editDailyKode">Kode Material</label>
+              <input type="text" id="editDailyKode" class="form-control" readonly style="background: rgba(15, 23, 42, 0.5);">
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyNama">Nama Material</label>
+              <input type="text" id="editDailyNama" class="form-control" readonly style="background: rgba(15, 23, 42, 0.5);">
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyTanggal">Tanggal Transaksi *</label>
+              <input type="date" id="editDailyTanggal" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyJam">Jam</label>
+              <input type="time" id="editDailyJam" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyIn" style="color: #34d399;">IN (Barang Masuk) *</label>
+              <input type="number" id="editDailyIn" class="form-control" min="0" required>
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyOut" style="color: #f87171;">OUT (Barang Keluar) *</label>
+              <input type="number" id="editDailyOut" class="form-control" min="0" required>
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyUtd">UTD (Kolom Excel)</label>
+              <input type="text" id="editDailyUtd" class="form-control" placeholder="Opsional">
+            </div>
+
+            <div class="form-group">
+              <label for="editDailyNotes">Catatan</label>
+              <input type="text" id="editDailyNotes" class="form-control" placeholder="Catatan transaksi">
+            </div>
+          </div>
+          <div style="font-size: 0.78rem; color: #93c5fd; margin-top: 0.75rem;">
+            <i class="fa-solid fa-circle-info"></i> Mengubah quantity IN atau OUT akan otomatis menghitung ulang saldo SISA pada hari ini dan seluruh hari berikutnya tanpa perulangan.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i> Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: KONFIRMASI HAPUS
+       ==================================================================== -->
+  <div class="modal-overlay" id="confirmDeleteModal">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--danger);"></i> Konfirmasi Penghapusan</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmDeleteMessage" style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.5;">
+          Apakah Anda yakin ingin menghapus data ini?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-modal-cancel">Batal</button>
+        <button type="button" class="btn btn-danger" id="btnExecuteDelete">
+          <i class="fa-solid fa-trash"></i> Ya, Hapus Data
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: BACKUP & RESTORE DATABASE
+       ==================================================================== -->
+  <div class="modal-overlay" id="backupModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-database" style="color: var(--primary);"></i> Pusat Backup & Pemulihan Data</h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.25rem;">
+          Jaga keamanan inventaris Anda. Anda dapat mengunduh seluruh database (Master Material, Transaksi Harian, dan Audit Log) ke file cadangan JSON dan memulihkannya kapan saja.
+        </p>
+
+        <!-- Backup Download -->
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: #93c5fd; margin-bottom: 0.35rem;">
+            <i class="fa-solid fa-download"></i> Unduh File Backup Database
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+            Simpan salinan data lengkap ke komputer Anda dalam format .json (dapat diunduh oleh siapa saja).
+          </p>
+          <button type="button" class="btn btn-primary" id="btnDownloadBackup">
+            <i class="fa-solid fa-file-arrow-down"></i> Unduh Backup Sekarang (.json)
+          </button>
+        </div>
+
+        <!-- Restore Upload -->
+        <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: #fbbf24; margin-bottom: 0.35rem;">
+            <i class="fa-solid fa-upload"></i> Pulihkan / Restore Data dari Backup (Khusus Admin)
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+            Pilih file .json cadangan yang telah Anda unduh sebelumnya untuk memulihkan data.
+          </p>
+          <input type="file" id="backupFileInput" accept=".json" style="display: none;">
+          <button type="button" class="btn btn-warning" id="btnTriggerRestore">
+            <i class="fa-solid fa-rotate-left"></i> Pilih File Backup & Restore
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-modal-cancel">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================
+       MODAL: GOOGLE SHEETS SETTINGS & LIVE SYNC
+       ==================================================================== -->
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-dialog large">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-table" style="color: var(--success);"></i> Integrasi & Sinkronisasi Google Sheets</h3>
+        <h3><i class="fa-solid fa-table" style="color: var(--success);"></i> Integrasi Cloud Google Sheets (Multi-Sheet)</h3>
         <button class="modal-close" title="Tutup">&times;</button>
       </div>
       <form id="settingsForm">
         <div class="modal-body">
           <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
-            Hubungkan website ini langsung dengan Google Sheets agar Anda dan tim dapat mengedit data di spreadsheet kapan saja, dan data di website akan selalu terupdate secara otomatis (2-way continuous editing).
+            Hubungkan website ini langsung dengan Google Sheets agar Anda dan tim kantor dapat mengedit data di spreadsheet kapan saja, dan data di website akan selalu terupdate secara otomatis (2-way continuous editing).
           </p>
 
           <!-- Step Guide -->
@@ -440,8 +1467,8 @@
             <div class="setup-step">
               <div class="step-num">1</div>
               <div class="step-content">
-                <h4>Buat Google Sheet & Buka Apps Script</h4>
-                <p>Buka <a href="https://sheets.new" target="_blank" style="color: var(--primary); text-decoration: underline;">Google Sheets Baru</a> &rarr; Klik menu <strong>Ekstensi (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</p>
+                <h4>Buka Google Sheet & Apps Script</h4>
+                <p>Buka spreadsheet Anda di <a href="https://sheets.new" target="_blank" style="color: var(--primary); text-decoration: underline;">Google Sheets</a> &rarr; Klik menu <strong>Ekstensi (Extensions)</strong> &rarr; <strong>Apps Script</strong>.</p>
               </div>
             </div>
 
@@ -461,7 +1488,7 @@
               <div class="step-num">3</div>
               <div class="step-content">
                 <h4>Deploy sebagai Web App & Salin URL</h4>
-                <p>Di Apps Script, klik <strong>Deploy (Terapkan) &rarr; New Deployment (Penerapan baru) &rarr; Web app</strong>.<br>
+                <p>Di Apps Script, klik <strong>Deploy (Terapkan) &rarr; New Deployment &rarr; Web app</strong>.<br>
                 Pilih: <em>Execute as: Me</em> dan <strong><em>Who has access: Anyone (Siapa saja)</em></strong>.<br>
                 Salin <strong>Web App URL</strong> yang dihasilkan lalu tempelkan pada kolom di bawah ini.</p>
               </div>
@@ -488,31 +1515,45 @@
             <div class="form-group">
               <label for="cfgSyncInterval">Interval Auto-Sync</label>
               <select id="cfgSyncInterval" class="form-control">
-                <option value="1">Setiap 1 Menit</option>
-                <option value="2" selected>Setiap 2 Menit</option>
+                <option value="1" selected>Setiap 1 Menit (Realtime Tim Kantor)</option>
+                <option value="2">Setiap 2 Menit</option>
                 <option value="5">Setiap 5 Menit</option>
-                <option value="10">Setiap 10 Menit</option>
               </select>
             </div>
 
             <div class="form-group col-span-2" style="flex-direction: row; align-items: center; gap: 0.75rem;">
-              <input type="checkbox" id="cfgAutoSync" style="width: 18px; height: 18px; cursor: pointer;">
-              <label for="cfgAutoSync" style="cursor: pointer; margin: 0;">Aktifkan Auto-Sync Otomatis di Latar Belakang (Real-time updates dari Spreadsheet)</label>
+              <input type="checkbox" id="cfgAutoSync" style="width: 18px; height: 18px; cursor: pointer;" checked>
+              <label for="cfgAutoSync" style="cursor: pointer; margin: 0;">Aktifkan Auto-Sync Otomatis di Latar Belakang (Pembaruan Real-Time Antar Komputer Tim)</label>
             </div>
           </div>
 
           <!-- Bulk Push Data Button -->
-          <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: gap: 1rem;">
+          <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
             <div>
               <div style="font-weight: 600; color: #93c5fd; font-size: 0.9rem;">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Isi Awal Data Google Sheet (Bulk Push)
+                <i class="fa-solid fa-cloud-arrow-up"></i> Kirim Semua Data ke Google Sheets (Push Cloud)
               </div>
               <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
-                Kirim seluruh 338 data spare part saat ini ke Google Sheet baru Anda hanya dengan 1 klik.
+                Sinkronkan seluruh Master Material (termasuk PS & LIB), Transaksi Harian, dan Audit Log ke Google Sheets.
               </div>
             </div>
             <button type="button" class="btn btn-primary" id="btnBulkPush">
               <i class="fa-solid fa-upload"></i> Kirim Semua Data ke Sheets
+            </button>
+          </div>
+
+          <!-- Keamanan & Password Admin -->
+          <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: var(--radius-md); padding: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem;">
+            <div>
+              <div style="font-weight: 600; color: #fbbf24; font-size: 0.9rem;">
+                <i class="fa-solid fa-shield-halved"></i> Keamanan Password Admin
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">
+                Ganti password admin untuk mengontrol siapa saja yang bisa mengedit stok dan konfigurasi web.
+              </div>
+            </div>
+            <button type="button" class="btn btn-warning" id="btnOpenChangePassword">
+              <i class="fa-solid fa-key"></i> Ganti Password Admin
             </button>
           </div>
 
@@ -537,10 +1578,37 @@
     </div>
   </div>
 
+
+  <!-- ====================================================================
+       MODAL: LIGHTBOX IMAGE PREVIEW (FULL RESOLUTION)
+       ==================================================================== -->
+  <div class="modal-overlay" id="imageLightboxModal">
+    <div class="modal-dialog large" style="max-width: 1060px; padding: 0; background: rgba(15, 23, 42, 0.95); overflow: hidden;">
+      <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 1rem 1.5rem;">
+        <h3 style="font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem;">
+          <i class="fa-solid fa-building-circle-check" style="color: var(--primary);"></i>
+          PT. STAR WAGEN INDONESIA - VIB
+        </h3>
+        <button class="modal-close" title="Tutup">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 1rem; text-align: center;">
+        <img src="assets/star-wagen-hero.jpg" alt="PT. STAR WAGEN INDONESIA - VIB" style="width: 100%; height: auto; border-radius: var(--radius-md); display: block; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div style="margin-top: 0.85rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-secondary); flex-wrap: wrap; gap: 0.5rem; padding: 0 0.25rem;">
+          <span><i class="fa-solid fa-truck-moving" style="color: var(--primary);"></i> Unit Armada: Mercedes-Benz Truck &bull; SAKAI Roller &bull; Atlas Copco Mobile Generator</span>
+          <span style="color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-award"></i> Member of VIB</span>
+        </div>
+      </div>
+      <div class="modal-footer" style="padding: 0.75rem 1.5rem;">
+        <button type="button" class="btn btn-secondary btn-modal-cancel">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Scripts -->
+  <script src="db.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 

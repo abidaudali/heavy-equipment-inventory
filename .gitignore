@@ -1,6 +1,7 @@
 # Vercel
 .vercel
 .vercel_backup
+backup_pre_upgrade/
 
 # Environment variables & Sensitive files
 .env

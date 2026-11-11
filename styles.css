@@ -1,4 +1,4 @@
-/* Modern Heavy Equipment Spare Parts Inventory Dashboard Styles */
+/* PT. STAR WAGEN INDONESIA - VIB Spare Parts Inventory Dashboard Styles */
 :root {
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
@@ -100,16 +100,26 @@ body {
 }
 
 .brand-icon {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: 1.25rem;
-  box-shadow: 0 0 15px var(--primary-glow);
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 3px;
+  flex-shrink: 0;
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: calc(var(--radius-md) - 3px);
+  display: block;
 }
 
 .brand-text h1 {
@@ -231,6 +241,59 @@ body {
 .btn-sheet:hover {
   background: linear-gradient(135deg, #047857 0%, #059669 100%);
   transform: translateY(-1px);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+  transform: translateY(-1px);
+}
+
+.btn-outline-danger {
+  background: transparent;
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.btn-outline-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #fca5a5;
+  transform: translateY(-1px);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.admin-auth-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-admin {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 0.4rem 0.75rem;
+}
+
+.badge-guest {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
 }
 
 .btn-icon {
@@ -1109,4 +1172,760 @@ body {
   .select-group {
     justify-content: space-between;
   }
+}
+
+/* ==========================================================================
+   NAVIGATION BAR & APP VIEWS (6 MAIN MODULES)
+   ========================================================================== */
+.main-nav-bar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 40;
+  backdrop-filter: blur(10px);
+}
+.main-nav-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.15rem;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.nav-tab-btn i {
+  font-size: 1rem;
+}
+
+.nav-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-tab-btn.active {
+  color: var(--primary);
+  font-weight: 600;
+  border-bottom-color: var(--primary);
+  background: rgba(59, 130, 246, 0.06);
+}
+
+.nav-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  font-weight: 600;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.app-view {
+  display: none;
+  animation: viewFadeIn 0.25s ease-out;
+}
+
+.app-view.active {
+  display: block;
+}
+
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   PAGE HEADER & SUB-HERO
+   ========================================================================== */
+.view-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.view-header-title h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.view-header-title p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-top: 0.25rem;
+}
+
+.view-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   BULK DATA IMPORT (EXCEL COPY-PASTE) STYLES
+   ========================================================================== */
+.import-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.import-hero-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.excel-guide-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin: 1rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  color: #93c5fd;
+  overflow-x: auto;
+}
+
+.excel-guide-box table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.excel-guide-box th, .excel-guide-box td {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  padding: 0.4rem 0.65rem;
+  text-align: left;
+}
+
+.excel-guide-box th {
+  background: rgba(59, 130, 246, 0.15);
+  color: #bfdbfe;
+}
+
+.excel-paste-area {
+  width: 100%;
+  height: 200px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 2px dashed rgba(59, 130, 246, 0.4);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all var(--transition-fast);
+  outline: none;
+}
+
+.excel-paste-area:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary-glow);
+  background: rgba(15, 23, 42, 0.9);
+}
+
+.preview-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.preview-metric-card {
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.preview-metric-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.preview-metric-info .val {
+  font-size: 1.4rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.preview-metric-info .lbl {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Badge Status in Preview Table */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-status.new {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.badge-status.existing {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.badge-status.duplicate {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.badge-status.error {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+/* ==========================================================================
+   DAILY STOCK TRANSACTION QUICK FORM & TABLE
+   ========================================================================== */
+.daily-quick-form {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+}
+
+.daily-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) auto;
+  gap: 0.85rem;
+  align-items: flex-end;
+}
+
+.badge-in {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.badge-out {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.badge-sisa {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  font-size: 0.95rem;
+}
+
+/* ==========================================================================
+   AUDIT LOGS & TIMELINE
+   ========================================================================== */
+.audit-action-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.audit-action-tag.CREATE_MATERIAL { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.audit-action-tag.UPDATE_MATERIAL { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.audit-action-tag.DELETE_MATERIAL { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.audit-action-tag.ADD_DAILY_STOCK { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.audit-action-tag.EDIT_DAILY_STOCK { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.audit-action-tag.DELETE_DAILY_STOCK { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.audit-action-tag.BULK_IMPORT { background: rgba(139, 92, 246, 0.2); color: #c084fc; }
+
+/* ==========================================================================
+   REPORTS SECTION STYLES
+   ========================================================================== */
+.report-tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.report-tab-pill {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.report-tab-pill.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.report-card {
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1.5rem;
+}
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .top-navbar, .main-nav-bar, .view-header-actions, .filter-row-top, .filter-row-bottom, .pagination-wrapper, .modal-overlay, #toastContainer {
+    display: none !important;
+  }
+  .glass-panel {
+    background: none !important;
+    border: 1px solid #ccc !important;
+    box-shadow: none !important;
+  }
+  .inventory-table th, .inventory-table td {
+    color: black !important;
+    border-color: #ddd !important;
+  }
+}
+
+/* ==========================================================================
+   FLOATING BULK ACTION BAR & INTERACTIVE CELL EDITING
+   ========================================================================== */
+.bulk-action-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: var(--radius-lg);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+  z-index: 100;
+  animation: slideUpFloating 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 95vw;
+  flex-wrap: wrap;
+}
+
+@keyframes slideUpFloating {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.bulk-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  color: #93c5fd;
+  white-space: nowrap;
+  font-size: 0.95rem;
+  border-right: 1px solid var(--border-color);
+  padding-right: 1rem;
+}
+
+.bulk-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Interactive Click-to-Toggle Badges */
+.badge-toggle-ps, .badge-toggle-lib {
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.badge-toggle-ps:hover, .badge-toggle-lib:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.badge-ps {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.badge-non-ps {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.badge-lib {
+  background: rgba(6, 182, 212, 0.2);
+  color: #22d3ee;
+  border: 1px solid rgba(6, 182, 212, 0.45);
+}
+
+.badge-non-lib {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* Quick QTY stepper in table */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+}
+
+.qty-stepper-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: var(--text-primary);
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.15s ease;
+}
+
+.qty-stepper-btn:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.qty-val-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.95rem;
+  min-width: 38px;
+  text-align: center;
+  cursor: pointer;
+  padding: 0 4px;
+  border-radius: 3px;
+  transition: all 0.15s ease;
+}
+
+.qty-val-display:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+.inline-edit-input {
+  width: 55px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  color: white;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  padding: 2px 4px;
+  outline: none;
+}
+
+/* Checkbox styling in inventory table */
+.inventory-table th input[type="checkbox"],
+.inventory-table td input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+/* Selected row highlight */
+.inventory-table tr.selected-row {
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+
+/* ==========================================================================
+   GUEST READ-ONLY MODE & ADMIN GATE NOTICES
+   ========================================================================== */
+.guest-lock-banner {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.guest-import-card {
+  padding: 3rem 2rem;
+  text-align: center;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.badge-static-ps, .badge-static-lib {
+  cursor: default !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  user-select: none;
+}
+
+/* ==========================================================================
+   ADMIN & GUEST AUTH STYLING
+   ========================================================================== */
+.admin-auth-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-admin {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.badge-guest {
+  background: rgba(100, 116, 139, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ==========================================================================
+   BRAND HERO CORPORATE PANEL (PT. STAR WAGEN INDONESIA - VIB)
+   ========================================================================== */
+.brand-hero-panel {
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.75rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.7) 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  transition: all var(--transition-normal);
+}
+
+.brand-hero-panel:hover {
+  border-color: rgba(59, 130, 246, 0.45);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
+.brand-hero-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.brand-hero-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  flex-wrap: wrap;
+}
+
+.brand-hero-logo-box {
+  width: 58px;
+  height: 58px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  padding: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.hero-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.hero-collab-badge {
+  display: inline-block;
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.brand-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  margin-bottom: 0.4rem;
+}
+
+.brand-hero-title h3 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 0.2rem;
+}
+
+.brand-hero-title p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.brand-hero-image-box {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #0b1120;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.4);
+}
+
+.brand-hero-img {
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.brand-hero-image-box:hover .brand-hero-img {
+  transform: scale(1.015);
+}
+
+.brand-hero-badge-float {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(15, 23, 42, 0.82);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fbbf24;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+[data-theme="light"] .brand-hero-panel {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.9) 100%);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .brand-hero-image-box {
+  background: #1e293b;
 }
